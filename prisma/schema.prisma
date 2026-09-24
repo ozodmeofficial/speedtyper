@@ -1,0 +1,138 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String   @id @default(cuid())
+  username       String   @db.VarChar(24)
+  usernameLower  String   @unique @map("username_lower") @db.VarChar(24)
+  email          String?  @unique @db.VarChar(254)
+  passwordHash   String   @map("password_hash")
+  settings       Json?
+  settingsAt     DateTime? @map("settings_at")
+  testsStarted   Int      @default(0) @map("tests_started")
+  testsCompleted Int      @default(0) @map("tests_completed")
+  timeTyping     Float    @default(0) @map("time_typing")
+  racesCompleted Int      @default(0) @map("races_completed")
+  raceWins       Int      @default(0) @map("race_wins")
+  banned         Boolean  @default(false)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  sessions    Session[]
+  results     Result[]
+  bests       LeaderboardBest[]
+  raceResults RaceResult[]
+
+  @@map("users")
+}
+
+model Session {
+  /// HMAC-SHA256(SESSION_SECRET, token) as hex; the raw token lives only in the cookie
+  id         String   @id @db.VarChar(64)
+  userId     String   @map("user_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  rotatedAt  DateTime @default(now()) @map("rotated_at")
+  lastSeenAt DateTime @default(now()) @map("last_seen_at")
+  expiresAt  DateTime @map("expires_at")
+  userAgent  String?  @map("user_agent") @db.VarChar(300)
+  ip         String?  @db.VarChar(64)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model Result {
+  id             String   @id @default(cuid())
+  userId         String   @map("user_id")
+  mode           String   @db.VarChar(8)
+  mode2          String   @db.VarChar(16)
+  language       String   @db.VarChar(24)
+  punctuation    Boolean  @default(false)
+  numbers        Boolean  @default(false)
+  wpm            Float
+  raw            Float
+  acc            Float
+  consistency    Float
+  charCorrect    Int      @map("char_correct")
+  charIncorrect  Int      @map("char_incorrect")
+  charExtra      Int      @map("char_extra")
+  charMissed     Int      @map("char_missed")
+  duration       Float
+  wpmHistory     Json?    @map("wpm_history")
+  rawHistory     Json?    @map("raw_history")
+  errorHistory   Json?    @map("error_history")
+  isPb           Boolean  @default(false) @map("is_pb")
+  flagged        Boolean  @default(false)
+  flagReason     String?  @map("flag_reason") @db.VarChar(120)
+  /// Asia/Tashkent calendar day, YYYYMMDD
+  dayKey         Int      @map("day_key")
+  createdAt      DateTime @default(now()) @map("created_at")
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([userId, mode, mode2, language, punctuation, numbers, wpm(sort: Desc)])
+  @@index([dayKey, mode, mode2, language, wpm(sort: Desc)])
+  @@map("results")
+}
+
+/// Best result per user per leaderboard (time 15 / time 60 per language).
+model LeaderboardBest {
+  id          String   @id @default(cuid())
+  board       String   @db.VarChar(40)
+  userId      String   @map("user_id")
+  resultId    String   @map("result_id")
+  wpm         Float
+  raw         Float
+  acc         Float
+  consistency Float
+  achievedAt  DateTime @map("achieved_at")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([board, userId])
+  @@index([board, wpm(sort: Desc), achievedAt])
+  @@map("leaderboard_bests")
+}
+
+model Race {
+  id          String       @id @default(cuid())
+  code        String       @db.VarChar(12)
+  language    String       @db.VarChar(24)
+  textType    String       @map("text_type") @db.VarChar(8)
+  textLength  Int          @map("text_length")
+  isPublic    Boolean      @map("is_public")
+  playerCount Int          @map("player_count")
+  startedAt   DateTime     @map("started_at")
+  finishedAt  DateTime     @map("finished_at")
+  results     RaceResult[]
+
+  @@index([finishedAt])
+  @@map("races")
+}
+
+model RaceResult {
+  id        String   @id @default(cuid())
+  raceId    String   @map("race_id")
+  userId    String?  @map("user_id")
+  nickname  String   @db.VarChar(24)
+  place     Int?
+  wpm       Float
+  acc       Float
+  finished  Boolean
+  duration  Float?
+  createdAt DateTime @default(now()) @map("created_at")
+  race      Race     @relation(fields: [raceId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([raceId])
+  @@map("race_results")
+}

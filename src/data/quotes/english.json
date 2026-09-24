@@ -1,0 +1,355 @@
+{
+  "language": "english",
+  "quotes": [
+    {
+      "id": 1,
+      "text": "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.",
+      "source": "Pride and Prejudice",
+      "author": "Jane Austen",
+      "length": 117
+    },
+    {
+      "id": 2,
+      "text": "Happy families are all alike; every unhappy family is unhappy in its own way.",
+      "source": "Anna Karenina (tr. Constance Garnett)",
+      "author": "Leo Tolstoy",
+      "length": 77
+    },
+    {
+      "id": 3,
+      "text": "We are all in the gutter, but some of us are looking at the stars.",
+      "source": "Lady Windermere's Fan",
+      "author": "Oscar Wilde",
+      "length": 66
+    },
+    {
+      "id": 4,
+      "text": "The mass of men lead lives of quiet desperation. What is called resignation is confirmed desperation.",
+      "source": "Walden",
+      "author": "Henry David Thoreau",
+      "length": 101
+    },
+    {
+      "id": 5,
+      "text": "A foolish consistency is the hobgoblin of little minds, adored by little statesmen and philosophers and divines.",
+      "source": "Self-Reliance",
+      "author": "Ralph Waldo Emerson",
+      "length": 112
+    },
+    {
+      "id": 6,
+      "text": "Early to bed and early to rise, makes a man healthy, wealthy, and wise.",
+      "source": "Poor Richard's Almanack",
+      "author": "Benjamin Franklin",
+      "length": 71
+    },
+    {
+      "id": 7,
+      "text": "There are no foreign lands. It is the traveller only who is foreign.",
+      "source": "The Silverado Squatters",
+      "author": "Robert Louis Stevenson",
+      "length": 68
+    },
+    {
+      "id": 8,
+      "text": "Few things are harder to put up with than the annoyance of a good example.",
+      "source": "Pudd'nhead Wilson",
+      "author": "Mark Twain",
+      "length": 74
+    },
+    {
+      "id": 9,
+      "text": "Let us endeavor so to live that when we come to die even the undertaker will be sorry.",
+      "source": "Pudd'nhead Wilson",
+      "author": "Mark Twain",
+      "length": 86
+    },
+    {
+      "id": 10,
+      "text": "There is only one thing in the world worse than being talked about, and that is not being talked about.",
+      "source": "The Picture of Dorian Gray",
+      "author": "Oscar Wilde",
+      "length": 103
+    },
+    {
+      "id": 11,
+      "text": "Marley was dead: to begin with. There is no doubt whatever about that.",
+      "source": "A Christmas Carol",
+      "author": "Charles Dickens",
+      "length": 70
+    },
+    {
+      "id": 12,
+      "text": "I will honour Christmas in my heart, and try to keep it all the year.",
+      "source": "A Christmas Carol",
+      "author": "Charles Dickens",
+      "length": 69
+    },
+    {
+      "id": 13,
+      "text": "Cowards die many times before their deaths; the valiant never taste of death but once.",
+      "source": "Julius Caesar",
+      "author": "William Shakespeare",
+      "length": 86
+    },
+    {
+      "id": 14,
+      "text": "The fault, dear Brutus, is not in our stars, but in ourselves, that we are underlings.",
+      "source": "Julius Caesar",
+      "author": "William Shakespeare",
+      "length": 86
+    },
+    {
+      "id": 15,
+      "text": "What's in a name? That which we call a rose by any other name would smell as sweet.",
+      "source": "Romeo and Juliet",
+      "author": "William Shakespeare",
+      "length": 83
+    },
+    {
+      "id": 16,
+      "text": "However mean your life is, meet it and live it; do not shun it and call it hard names.",
+      "source": "Walden",
+      "author": "Henry David Thoreau",
+      "length": 86
+    },
+    {
+      "id": 17,
+      "text": "\"Begin at the beginning,\" the King said gravely, \"and go on till you come to the end: then stop.\"",
+      "source": "Alice's Adventures in Wonderland",
+      "author": "Lewis Carroll",
+      "length": 97
+    },
+    {
+      "id": 18,
+      "text": "Practice does not make you perfect overnight, but every careful keystroke today makes tomorrow a little easier.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 111
+    },
+    {
+      "id": 19,
+      "text": "Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal.",
+      "source": "Gettysburg Address",
+      "author": "Abraham Lincoln",
+      "length": 176
+    },
+    {
+      "id": 20,
+      "text": "Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world.",
+      "source": "Moby-Dick",
+      "author": "Herman Melville",
+      "length": 230
+    },
+    {
+      "id": 21,
+      "text": "Is it so bad, then, to be misunderstood? Pythagoras was misunderstood, and Socrates, and Jesus, and Luther, and Copernicus, and Galileo, and Newton, and every pure and wise spirit that ever took flesh. To be great is to be misunderstood.",
+      "source": "Self-Reliance",
+      "author": "Ralph Waldo Emerson",
+      "length": 237
+    },
+    {
+      "id": 22,
+      "text": "Our new Constitution is now established, and has an appearance that promises permanency; but in this world nothing can be said to be certain, except death and taxes.",
+      "source": "Letter to Jean-Baptiste Le Roy",
+      "author": "Benjamin Franklin",
+      "length": 165
+    },
+    {
+      "id": 23,
+      "text": "How often have I said to you that when you have eliminated the impossible, whatever remains, however improbable, must be the truth?",
+      "source": "The Sign of the Four",
+      "author": "Arthur Conan Doyle",
+      "length": 131
+    },
+    {
+      "id": 24,
+      "text": "It is a capital mistake to theorize before one has data. Insensibly one begins to twist facts to suit theories, instead of theories to suit facts.",
+      "source": "A Scandal in Bohemia",
+      "author": "Arthur Conan Doyle",
+      "length": 146
+    },
+    {
+      "id": 25,
+      "text": "You don't know about me without you have read a book by the name of The Adventures of Tom Sawyer; but that ain't no matter.",
+      "source": "Adventures of Huckleberry Finn",
+      "author": "Mark Twain",
+      "length": 123
+    },
+    {
+      "id": 26,
+      "text": "The only way to get rid of a temptation is to yield to it. Resist it, and your soul grows sick with longing for the things it has forbidden to itself.",
+      "source": "The Picture of Dorian Gray",
+      "author": "Oscar Wilde",
+      "length": 150
+    },
+    {
+      "id": 27,
+      "text": "I declare after all there is no enjoyment like reading! How much sooner one tires of any thing than of a book! When I have a house of my own, I shall be miserable if I have not an excellent library.",
+      "source": "Pride and Prejudice",
+      "author": "Jane Austen",
+      "length": 198
+    },
+    {
+      "id": 28,
+      "text": "Vanity and pride are different things, though the words are often used synonymously. A person may be proud without being vain. Pride relates more to our opinion of ourselves, vanity to what we would have others think of us.",
+      "source": "Pride and Prejudice",
+      "author": "Jane Austen",
+      "length": 223
+    },
+    {
+      "id": 29,
+      "text": "This above all: to thine own self be true, and it must follow, as the night the day, thou canst not then be false to any man.",
+      "source": "Hamlet",
+      "author": "William Shakespeare",
+      "length": 125
+    },
+    {
+      "id": 30,
+      "text": "A house divided against itself cannot stand. I believe this government cannot endure, permanently half slave and half free.",
+      "source": "House Divided Speech",
+      "author": "Abraham Lincoln",
+      "length": 123
+    },
+    {
+      "id": 31,
+      "text": "Simplicity, simplicity, simplicity! I say, let your affairs be as two or three, and not a hundred or a thousand; instead of a million count half a dozen, and keep your accounts on your thumb-nail.",
+      "source": "Walden",
+      "author": "Henry David Thoreau",
+      "length": 196
+    },
+    {
+      "id": 32,
+      "text": "If a man does not keep pace with his companions, perhaps it is because he hears a different drummer. Let him step to the music which he hears, however measured or far away.",
+      "source": "Walden",
+      "author": "Henry David Thoreau",
+      "length": 172
+    },
+    {
+      "id": 33,
+      "text": "We hold these truths to be self-evident, that all men are created equal, that they are endowed by their Creator with certain unalienable Rights, that among these are Life, Liberty and the pursuit of Happiness.",
+      "source": "Declaration of Independence",
+      "author": "Thomas Jefferson",
+      "length": 209
+    },
+    {
+      "id": 34,
+      "text": "It is a far, far better thing that I do, than I have ever done; it is a far, far better rest that I go to than I have ever known.",
+      "source": "A Tale of Two Cities",
+      "author": "Charles Dickens",
+      "length": 129
+    },
+    {
+      "id": 35,
+      "text": "Oh! But he was a tight-fisted hand at the grindstone, Scrooge! a squeezing, wrenching, grasping, scraping, clutching, covetous, old sinner! Hard and sharp as flint, from which no steel had ever struck out generous fire; secret, and self-contained, and solitary as an oyster.",
+      "source": "A Christmas Carol",
+      "author": "Charles Dickens",
+      "length": 274
+    },
+    {
+      "id": 36,
+      "text": "All the world's a stage, and all the men and women merely players; they have their exits and their entrances, and one man in his time plays many parts.",
+      "source": "As You Like It",
+      "author": "William Shakespeare",
+      "length": 151
+    },
+    {
+      "id": 37,
+      "text": "Truth is stranger than fiction, but it is because Fiction is obliged to stick to possibilities; Truth isn't.",
+      "source": "Following the Equator",
+      "author": "Mark Twain",
+      "length": 108
+    },
+    {
+      "id": 38,
+      "text": "The best way to learn to type quickly is to slow down first. Accuracy builds the habits your fingers remember, and speed follows naturally once the motions feel easy and familiar.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 179
+    },
+    {
+      "id": 39,
+      "text": "Every morning the old baker opened his shop before sunrise. The street was dark and quiet, but the smell of fresh bread drifted through the air and told the whole neighborhood that a new day had begun.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 201
+    },
+    {
+      "id": 40,
+      "text": "A good map shows you where the roads are, but it cannot tell you which one to take. That choice belongs to the traveler, who must decide what matters most before setting out.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 174
+    },
+    {
+      "id": 41,
+      "text": "It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light, it was the season of Darkness, it was the spring of hope, it was the winter of despair, we had everything before us, we had nothing before us, we were all going direct to Heaven, we were all going direct the other way.",
+      "source": "A Tale of Two Cities",
+      "author": "Charles Dickens",
+      "length": 417
+    },
+    {
+      "id": 42,
+      "text": "Now we are engaged in a great civil war, testing whether that nation, or any nation so conceived and so dedicated, can long endure. We are met on a great battle-field of that war. We have come to dedicate a portion of that field, as a final resting place for those who here gave their lives that that nation might live. It is altogether fitting and proper that we should do this.",
+      "source": "Gettysburg Address",
+      "author": "Abraham Lincoln",
+      "length": 379
+    },
+    {
+      "id": 43,
+      "text": "To be, or not to be, that is the question: whether 'tis nobler in the mind to suffer the slings and arrows of outrageous fortune, or to take arms against a sea of troubles, and by opposing end them. To die, to sleep; no more; and by a sleep to say we end the heart-ache and the thousand natural shocks that flesh is heir to: 'tis a consummation devoutly to be wish'd.",
+      "source": "Hamlet",
+      "author": "William Shakespeare",
+      "length": 367
+    },
+    {
+      "id": 44,
+      "text": "With malice toward none, with charity for all, with firmness in the right as God gives us to see the right, let us strive on to finish the work we are in, to bind up the nation's wounds, to care for him who shall have borne the battle and for his widow and his orphan, to do all which may achieve and cherish a just and lasting peace among ourselves and with all nations.",
+      "source": "Second Inaugural Address",
+      "author": "Abraham Lincoln",
+      "length": 371
+    },
+    {
+      "id": 45,
+      "text": "Whenever I find myself growing grim about the mouth; whenever it is a damp, drizzly November in my soul; whenever I find myself involuntarily pausing before coffin warehouses, and bringing up the rear of every funeral I meet; and especially whenever my hypos get such an upper hand of me, that it requires a strong moral principle to prevent me from deliberately stepping into the street, and methodically knocking people's hats off -- then, I account it high time to get to sea as soon as I can.",
+      "source": "Moby-Dick",
+      "author": "Herman Melville",
+      "length": 496
+    },
+    {
+      "id": 46,
+      "text": "I went to the woods because I wished to live deliberately, to front only the essential facts of life, and see if I could not learn what it had to teach, and not, when I came to die, discover that I had not lived. I did not wish to live what was not life, living is so dear; nor did I wish to practise resignation, unless it was quite necessary.",
+      "source": "Walden",
+      "author": "Henry David Thoreau",
+      "length": 344
+    },
+    {
+      "id": 47,
+      "text": "But, in a larger sense, we can not dedicate -- we can not consecrate -- we can not hallow -- this ground. The brave men, living and dead, who struggled here, have consecrated it, far above our poor power to add or detract. The world will little note, nor long remember what we say here, but it can never forget what they did here.",
+      "source": "Gettysburg Address",
+      "author": "Abraham Lincoln",
+      "length": 330
+    },
+    {
+      "id": 48,
+      "text": "The lighthouse keeper climbed the narrow stairs every evening at the same hour. He cleaned the glass, trimmed the wick, and watched the first beam sweep across the water. Most nights nothing happened at all, and ships passed safely without ever knowing his name. Yet he never thought the work was wasted, because a light that is always there is exactly what makes a dark coast safe.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 382
+    },
+    {
+      "id": 49,
+      "text": "Learning a new skill rarely feels like progress while it is happening. The first week is clumsy, the second is frustrating, and the third often seems no better than the first. Then one day you notice that something which used to take all your attention now happens almost on its own. That quiet moment is the reward for every hour you spent practicing when it did not seem to matter.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 383
+    },
+    {
+      "id": 50,
+      "text": "In the small village by the river, the market opened every Saturday morning. Farmers arrived early with baskets of apples, onions, and warm bread, while children ran between the stalls looking for sweets. By noon the square was full of voices, laughter, and the sound of coins changing hands. When the sun began to set, the tables were folded away, and the square became quiet again until the next week.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 403
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+# SpeedTyper — Dokploy / docker compose deployment.
+# Traefik (Dokploy) terminates TLS; websockets (/ws) pass through untouched.
+name: speedtyper
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: speedtyper:latest
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      APP_URL: ${APP_URL:-https://speedtyper.uz}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-speedtyper}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-speedtyper}?schema=public
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET is required}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,::1/128,fc00::/7}
+      TRUST_CLOUDFLARE: ${TRUST_CLOUDFLARE:-true}
+      WS_MAX_CONN_PER_IP: ${WS_MAX_CONN_PER_IP:-20}
+    expose:
+      - "3000"
+    networks:
+      - default
+      - dokploy-network
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      # http -> https
+      - traefik.http.routers.speedtyper-http.rule=Host(`speedtyper.uz`) || Host(`www.speedtyper.uz`)
+      - traefik.http.routers.speedtyper-http.entrypoints=web
+      - traefik.http.routers.speedtyper-http.middlewares=speedtyper-https
+      - traefik.http.middlewares.speedtyper-https.redirectscheme.scheme=https
+      - traefik.http.middlewares.speedtyper-https.redirectscheme.permanent=true
+      # https (www -> apex)
+      - traefik.http.routers.speedtyper.rule=Host(`speedtyper.uz`) || Host(`www.speedtyper.uz`)
+      - traefik.http.routers.speedtyper.entrypoints=websecure
+      - traefik.http.routers.speedtyper.tls=true
+      - traefik.http.routers.speedtyper.tls.certresolver=${TLS_CERT_RESOLVER:-letsencrypt}
+      - traefik.http.routers.speedtyper.middlewares=speedtyper-www
+      - traefik.http.middlewares.speedtyper-www.redirectregex.regex=^https?://www\.speedtyper\.uz/(.*)
+      - traefik.http.middlewares.speedtyper-www.redirectregex.replacement=https://speedtyper.uz/$${1}
+      - traefik.http.middlewares.speedtyper-www.redirectregex.permanent=true
+      - traefik.http.routers.speedtyper.service=speedtyper
+      - traefik.http.services.speedtyper.loadbalancer.server.port=3000
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-speedtyper}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-speedtyper}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    shm_size: 256mb
+
+volumes:
+  pgdata:
+
+networks:
+  default:
+  dokploy-network:
+    external: true

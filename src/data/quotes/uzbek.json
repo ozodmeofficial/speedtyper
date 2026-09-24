@@ -1,0 +1,320 @@
+{
+  "language": "uzbek",
+  "quotes": [
+    {
+      "id": 1,
+      "text": "Yetti o‘lchab, bir kes. Avval o‘yla, keyin so‘yla. Bugungi ishni ertaga qoldirma.",
+      "source": "O‘zbek xalq maqollari",
+      "author": "Xalq maqoli",
+      "length": 81
+    },
+    {
+      "id": 2,
+      "text": "Birni ko‘rib, fikr qil, mingni ko‘rib, shukr qil. Sabr tagi - sariq oltin.",
+      "source": "O‘zbek xalq maqollari",
+      "author": "Xalq maqoli",
+      "length": 74
+    },
+    {
+      "id": 3,
+      "text": "Do‘st boshga, dushman oyoqqa qaraydi. Do‘stsiz boshim - tuzsiz oshim.",
+      "source": "O‘zbek xalq maqollari",
+      "author": "Xalq maqoli",
+      "length": 69
+    },
+    {
+      "id": 4,
+      "text": "O‘qigan o‘zar, o‘qimagan to‘zar. Ilm olish igna bilan quduq qazishdek gap.",
+      "source": "O‘zbek xalq maqollari",
+      "author": "Xalq maqoli",
+      "length": 74
+    },
+    {
+      "id": 5,
+      "text": "Hunar - hunardan unar. Bir yigitga yetmish hunar oz. Hunarli kishi xor bo‘lmas.",
+      "source": "O‘zbek xalq maqollari",
+      "author": "Xalq maqoli",
+      "length": 79
+    },
+    {
+      "id": 6,
+      "text": "Aytilgan so‘z - otilgan o‘q. Yaxshi so‘z - jon ozig‘i. Yolg‘onning umri qisqa.",
+      "source": "O‘zbek xalq maqollari",
+      "author": "Xalq maqoli",
+      "length": 78
+    },
+    {
+      "id": 7,
+      "text": "Ko‘z qo‘rqoq, qo‘l botir. Ishlagan tishlar. Mehnatning tagi - rohat.",
+      "source": "O‘zbek xalq maqollari",
+      "author": "Xalq maqoli",
+      "length": 68
+    },
+    {
+      "id": 8,
+      "text": "Ming eshitgandan bir ko‘rgan yaxshi. Ko‘rpangga qarab oyoq uzat.",
+      "source": "O‘zbek xalq maqollari",
+      "author": "Xalq maqoli",
+      "length": 64
+    },
+    {
+      "id": 9,
+      "text": "Vaqting ketdi - baxting ketdi. Sog‘lik - tuman boylik. Bosh omon bo‘lsa, do‘ppi topiladi.",
+      "source": "O‘zbek xalq maqollari",
+      "author": "Xalq maqoli",
+      "length": 89
+    },
+    {
+      "id": 10,
+      "text": "Birlashgan o‘zar, birlashmagan to‘zar. Qo‘shning tinch - sen tinch. Mehmon otangdan ulug‘.",
+      "source": "O‘zbek xalq maqollari",
+      "author": "Xalq maqoli",
+      "length": 90
+    },
+    {
+      "id": 11,
+      "text": "Kitob o‘qish - aqlni charxlash demakdir. Har bir yangi sahifa bizga yangi dunyoni ochadi.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 89
+    },
+    {
+      "id": 12,
+      "text": "Tez yozishni o‘rganish uchun avval to‘g‘ri yozishni o‘rganing. Tezlik esa o‘z-o‘zidan keladi.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 93
+    },
+    {
+      "id": 13,
+      "text": "Ertalabki choy, yangi non va samimiy suhbat - kunni yaxshi boshlash uchun shu yetarli.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 86
+    },
+    {
+      "id": 14,
+      "text": "Bahor kelganda bog‘lar gullaydi, qushlar sayraydi va odamlarning yuzida tabassum paydo bo‘ladi.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 95
+    },
+    {
+      "id": 15,
+      "text": "Har kuni ozgina mashq qilish bir kunda ko‘p mashq qilishdan ko‘ra ancha foydaliroq.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 83
+    },
+    {
+      "id": 16,
+      "text": "Tomchi-tomchi ko‘l bo‘lur, tommasa, qup-quruq cho‘l bo‘lur. Suv keltirgan xor, ko‘za sindirgan aziz. Yaxshidan ot qoladi, yomondan dod qoladi.",
+      "source": "O‘zbek xalq maqollari",
+      "author": "Xalq maqoli",
+      "length": 142
+    },
+    {
+      "id": 17,
+      "text": "Kattaga hurmatda, kichikka izzatda bo‘l. Eski do‘st dushman bo‘lmas, yangi dushman do‘st bo‘lmas. Qush uyasida ko‘rganini qiladi. Ota rozi - xudo rozi.",
+      "source": "O‘zbek xalq maqollari",
+      "author": "Xalq maqoli",
+      "length": 151
+    },
+    {
+      "id": 18,
+      "text": "Dangasaga ish buyursang, otangdan ortiq nasihat qiladi. Ona yurting - oltin beshiging. Shoshgan qiz erga yolchimas. Haqiqat egilar, lekin sinmas.",
+      "source": "O‘zbek xalq maqollari",
+      "author": "Xalq maqoli",
+      "length": 145
+    },
+    {
+      "id": 19,
+      "text": "Toshkent ko‘chalarida kuz fasli juda chiroyli bo‘ladi. Chinorlarning sarg‘aygan barglari yo‘lkalarni qoplaydi, havo esa salqin va toza bo‘lib qoladi.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 149
+    },
+    {
+      "id": 20,
+      "text": "Bobom har kuni ertalab bog‘ga chiqib, daraxtlarni sug‘orardi. U menga daraxt ekish - kelajakka ishonish demakdir, deb ko‘p marta aytgan edi.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 140
+    },
+    {
+      "id": 21,
+      "text": "Yaxshi do‘st qiyin kunda yoningda turadi. U seni maqtamaydi, balki haqiqatni aytadi. Shunday do‘stni topish qiyin, lekin uni yo‘qotish juda oson.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 145
+    },
+    {
+      "id": 22,
+      "text": "Kutubxonada o‘tirib kitob o‘qish menga katta zavq beradi. Bu yerda vaqt sekin o‘tadi, atrofda sukunat hukm suradi, fikrlar esa tiniqlashadi.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 140
+    },
+    {
+      "id": 23,
+      "text": "Ta’lim va tarbiya bir-biridan ajralmasdir. Bilimli, ammo odobsiz inson jamiyatga foyda keltira olmaydi. Shuning uchun maktab ikkalasiga ham birdek e’tibor berishi kerak.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 169
+    },
+    {
+      "id": 24,
+      "text": "San’at insonning qalbini boyitadi. Musiqa tinglash, rasm chizish yoki she’r o‘qish orqali biz dunyoni boshqacha ko‘rishni o‘rganamiz.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 133
+    },
+    {
+      "id": 25,
+      "text": "Samarqandning qadimiy obidalari har yili minglab sayyohlarni o‘ziga jalb qiladi. Registon maydonida turib, tarixning buyukligini his qilish mumkin.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 147
+    },
+    {
+      "id": 26,
+      "text": "Klaviaturada tez yozish uchun barmoqlarni to‘g‘ri joylashtirish muhim. Ko‘zingizni ekranda saqlang va harflarni qidirmasdan yozishga harakat qiling.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 148
+    },
+    {
+      "id": 27,
+      "text": "Onam har juma kuni palov damlardi. Butun oila dasturxon atrofida yig‘ilib, kun bo‘yi bo‘lgan voqealar haqida suhbatlashardi. O‘sha kechalar hali ham yodimda.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 157
+    },
+    {
+      "id": 28,
+      "text": "Qishloqda hayot shahardagidan farq qiladi. Bu yerda odamlar erta turadi, bir-birini yaxshi taniydi va har qanday ishda qo‘shnisiga yordam berishga tayyor turadi.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 161
+    },
+    {
+      "id": 29,
+      "text": "Sport bilan muntazam shug‘ullanish sog‘liqni mustahkamlaydi, kayfiyatni ko‘taradi va insonni intizomli bo‘lishga o‘rgatadi.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 123
+    },
+    {
+      "id": 30,
+      "text": "Har bir kasbning o‘z sirlari bor. Usta bo‘lish uchun yillar davomida sabr bilan mehnat qilish, xatolardan saboq olish va hech qachon o‘rganishdan to‘xtamaslik kerak.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 165
+    },
+    {
+      "id": 31,
+      "text": "Yomg‘irdan keyin havo toza va yangi bo‘lib qoladi. Osmonda kamalak paydo bo‘ladi, bolalar esa ko‘lmaklar ustidan sakrab, quvnoq kulishadi.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 138
+    },
+    {
+      "id": 32,
+      "text": "Ma’lumot ko‘p bo‘lgan zamonda eng muhim narsa - to‘g‘ri ma’lumotni ajrata bilishdir. Har bir xabarni tekshirib, keyin xulosa chiqarish lozim.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 141
+    },
+    {
+      "id": 33,
+      "text": "Tog‘ yo‘lida yurish oson emas, lekin cho‘qqiga chiqqaningizda ko‘rinadigan manzara barcha charchoqni unuttiradi. Hayotdagi maqsadlar ham xuddi shunday.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 151
+    },
+    {
+      "id": 34,
+      "text": "Bozorga borish men uchun alohida bayram. Rang-barang mevalar, issiq non hidi va sotuvchilarning shovqini qalbimga allaqanday quvonch bag‘ishlaydi.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 146
+    },
+    {
+      "id": 35,
+      "text": "Til - xalqning ma’naviy boyligi. Ona tilini sevgan va uni asragan xalq o‘z tarixini, madaniyatini va an’analarini kelajak avlodlarga yetkaza oladi.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 147
+    },
+    {
+      "id": 36,
+      "text": "Qish kechalari buvim bizga ertak aytib berardi. Sandal atrofida o‘tirib, issiq ko‘rpaga o‘ranib olardik va uning mayin ovozini tinglardik. Ertaklarda botir yigitlar, dono qizlar va ayyor tulkilar bor edi. Har bir ertak oxirida buvim bizga bir saboq berardi: yaxshilik qilgan inson hech qachon yolg‘iz qolmaydi, yomonlik esa albatta o‘z egasiga qaytadi. O‘sha kechalar hayotimdagi eng iliq xotiralar bo‘lib qoldi.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 412
+    },
+    {
+      "id": 37,
+      "text": "Yangi narsani o‘rganish har doim qiyin boshlanadi. Birinchi kunlarda hamma narsa notanish tuyuladi, xatolar esa qayta-qayta takrorlanadi. Ba’zan hammasini tashlab ketgim keladi. Lekin har kuni ozgina bo‘lsa ham mashq qilishda davom etsangiz, bir kun kelib, ilgari butun diqqatingizni talab qilgan ishni endi o‘ylamasdan bajarayotganingizni sezasiz. Aynan shu lahza barcha mehnatingizning mukofoti bo‘ladi.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 405
+    },
+    {
+      "id": 38,
+      "text": "Farg‘ona vodiysi o‘zining unumdor yerlari va mehnatkash odamlari bilan mashhur. Bahorda bog‘lar oq va pushti gullarga burkanadi, yozda esa daraxtlar shirin mevalarga to‘ladi. Bu yerda o‘rik, olma, anor va uzumning son-sanoqsiz navlari yetishtiriladi. Vodiy xalqi mehmondo‘stligi bilan ham ajralib turadi: har qanday mehmonni dasturxon yozib, samimiy kutib olishadi.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 365
+    },
+    {
+      "id": 39,
+      "text": "Maktabdagi birinchi kunimni hali ham eslayman. Onam menga yangi ko‘ylak kiydirib, qo‘limga gul berib, maktab darvozasigacha kuzatib qo‘ygan edi. Sinfga kirganimda hamma narsa juda katta va notanish tuyulgandi. Ammo ustozimiz shunday mehribonlik bilan kutib oldiki, qo‘rquvim tezda yo‘qoldi. O‘sha kuni men nafaqat birinchi harflarni, balki do‘stlikning qadrini ham o‘rgandim.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 375
+    },
+    {
+      "id": 40,
+      "text": "Kitob o‘qish odati bolalikdan shakllanadi. Agar uyda kitoblar bo‘lsa va ota-onalar ham o‘qishni yaxshi ko‘rsa, bola ham tabiiy ravishda kitobga qiziqa boshlaydi. Kitob insonga faqat bilim bermaydi, u tasavvurni kengaytiradi, so‘z boyligini oshiradi va boshqa odamlarni tushunishga yordam beradi. Shuning uchun har bir oilada kichik bo‘lsa ham kutubxona bo‘lishi juda muhim.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 373
+    },
+    {
+      "id": 41,
+      "text": "Buxoro - dunyodagi eng qadimiy shaharlardan biri. Uning tor ko‘chalari, gumbazli bozorlari va ko‘k koshinli madrasalari o‘tmish haqida jimgina hikoya qiladi. Kechqurun, quyosh botayotganda, Minorai Kalon tepasidan butun shahar oltin rangga bo‘yalgandek ko‘rinadi. Bu yerga kelgan har bir sayyoh tarixning jonli nafasini his qiladi va bu go‘zallikni hech qachon unutmaydi.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 371
+    },
+    {
+      "id": 42,
+      "text": "Hayotda eng muhim narsalardan biri - vaqtni qadrlash. Har bir o‘tgan daqiqa qaytib kelmaydi, shuning uchun uni foydali ishlarga sarflash kerak. Bu dam olmaslik degani emas, aksincha, to‘g‘ri dam olish ham vaqtni oqilona ishlatishning bir qismidir. Muhimi, kun oxirida o‘zingizga bugun nimani o‘rgandim, kimga yordam berdim, deb savol bera olishingiz va unga javob topa olishingizdir.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 383
+    },
+    {
+      "id": 43,
+      "text": "Kuz kelishi bilan paxta dalalari oppoq tusga kiradi. Dehqonlar erta tongdan dalaga chiqib, kun bo‘yi mehnat qilishadi. Ularning qo‘llari charchaydi, ammo yuzlaridagi tabassum so‘nmaydi, chunki bir yillik mehnatning natijasini ko‘rish har qanday charchoqdan ustun turadi. Kechqurun esa hamma birga o‘tirib, choy ichadi va kelgusi yil haqida rejalar tuzadi.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 355
+    },
+    {
+      "id": 44,
+      "text": "Do‘stlik - bu ikki inson o‘rtasidagi ishonch ko‘prigi. U bir kunda qurilmaydi, balki yillar davomida kichik yaxshiliklar, samimiy suhbatlar va qiyin damlarda berilgan yordam bilan mustahkamlanadi. Haqiqiy do‘st sizning muvaffaqiyatingizdan chin dildan quvonadi, xatoingizni esa yuzingizga aytadi. Bunday do‘stlarni asrang, chunki ular hayotdagi eng katta boyliklardan biridir.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 376
+    },
+    {
+      "id": 45,
+      "text": "Tongda shahar hali uyg‘onmagan paytda ko‘chalar juda sokin bo‘ladi. Faqat farroshlarning supurgi ovozi va uzoqdan eshitilayotgan birinchi avtobusning shovqini sukunatni buzadi. Nonvoyxonalardan issiq non hidi taraladi, osmon esa asta-sekin yorishib, pushti rangga kiradi. Men shu daqiqalarni juda yaxshi ko‘raman, chunki ular yangi kunning toza va beg‘ubor boshlanishini eslatadi.",
+      "source": "Original",
+      "author": "SpeedTyper",
+      "length": 380
+    }
+  ]
+}
