@@ -25,10 +25,10 @@ services:
       - "3000"
     networks:
       - default
-      - dokploy-network
+      - proxy
     labels:
       - traefik.enable=true
-      - traefik.docker.network=dokploy-network
+      - traefik.docker.network=proxy
       # http -> https
       - traefik.http.routers.speedtyper-http.rule=Host(`speedtyper.uz`) || Host(`www.speedtyper.uz`)
       - traefik.http.routers.speedtyper-http.entrypoints=web
@@ -75,5 +75,5 @@ volumes:
 
 networks:
   default:
-  dokploy-network:
+  proxy:
     external: true
