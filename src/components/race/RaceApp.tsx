@@ -7,11 +7,12 @@ import { useRace } from "./useRace";
 import { Lobby } from "./Lobby";
 import { RoomScreen } from "./RoomScreen";
 import type { DictKey } from "@/lib/i18n";
+import "./race.css";
 
 export function RaceApp({ initialCode }: { initialCode: string | null }) {
   const t = useT();
   const { user } = useApp();
-  const { status, lobby, room, me, error, setError, send, setLobbyOn } = useRace(initialCode);
+  const { status, lobby, room, me, error, setError, send, setLobbyOn, smoother } = useRace(initialCode);
 
   useEffect(() => {
     setLobbyOn(!room);
@@ -30,7 +31,7 @@ export function RaceApp({ initialCode }: { initialCode: string | null }) {
       {status === "connecting" && !room ? <p className="mt-4 text-center text-sm text-sub">{t("race.connecting")}</p> : null}
       {room ? (
         <>
-          <RoomScreen room={room} send={send} status={status} />
+          <RoomScreen room={room} send={send} status={status} smoother={smoother} />
           {room.state === "finished" && !user ? <p className="text-center text-xs text-sub">{t("race.guestSave")}</p> : null}
         </>
       ) : (

@@ -23,6 +23,10 @@ import { loadQuotes, loadWords, quotesIfLoaded, wordsIfLoaded } from "@/lib/clie
 import { CUSTOM_TEXT_STORAGE } from "@/lib/settings";
 import { languageInfo } from "@/lib/typing/words";
 import { api } from "@/lib/client/api";
+import { nextStreak, effectiveStreak, testXp, type XpAward } from "@/lib/xp";
+import { dayKey } from "@/lib/format";
+import { AnimatedNumber } from "@/components/xp/AnimatedNumber";
+import { FlameIcon } from "@/components/xp/Badges";
 
 const ResultView = dynamic(() => import("./ResultView").then((m) => m.ResultView), { ssr: false });
 const CustomTextModal = dynamic(() => import("./CustomTextModal").then((m) => m.CustomTextModal), { ssr: false });
@@ -40,6 +44,39 @@ interface Live {
 }
 
 const PB_KEY = "st_pbs";
+const GUEST_DAILY_KEY = "st_guest_daily";
+
+interface GuestDaily {
+  day: number;
+  count: number;
+  streak: number;
+  best: number;
+  last: number | null;
+}
+
+function readGuestDaily(): GuestDaily {
+  try {
+    const v = JSON.parse(localStorage.getItem(GUEST_DAILY_KEY) ?? "null") as GuestDaily | null;
+    if (v && typeof v.day === "number") return v;
+  } catch {
+    /* ignore */
+  }
+  return { day: 0, count: 0, streak: 0, best: 0, last: null };
+}
+
+/** Guests keep "tests today" and the daily streak locally. */
+function bumpGuestDaily(): GuestDaily {
+  const today = dayKey();
+  const g = readGuestDaily();
+  const st = nextStreak({ current: g.streak, best: g.best, lastDay: g.last }, today);
+  const next: GuestDaily = { day: today, count: g.day === today ? g.count + 1 : 1, streak: st.current, best: st.best, last: st.lastDay };
+  try {
+    localStorage.setItem(GUEST_DAILY_KEY, JSON.stringify(next));
+  } catch {
+    /* ignore */
+  }
+  return next;
+}
 const pbKey = (s: TestSpec) => `${s.mode}|${s.mode2}|${s.language}|${s.punctuation ? 1 : 0}|${s.numbers ? 1 : 0}`;
 
 function readCustomText(): string {
@@ -51,7 +88,7 @@ function readCustomText(): string {
 }
 
 export function TypingTest({ initial }: { initial: InitialTest | null }) {
-  const { settings, update, user } = useApp();
+  const { settings, update, user, progress, setProgress } = useApp();
   const t = useT();
   const signature = testSignature(settings);
   const idRef = useRef(1);
@@ -65,6 +102,11 @@ export function TypingTest({ initial }: { initial: InitialTest | null }) {
   const [result, setResult] = useState<FinalResult | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [isPb, setIsPb] = useState(false);
+  const [xpAward, setXpAward] = useState<XpAward | null>(null);
+  const [guestXp, setGuestXp] = useState<number | null>(null);
+  const [guestDaily, setGuestDaily] = useState<GuestDaily | null>(null);
+  const progressRef = useRef(progress);
+  progressRef.current = progress;
   const [live, setLive] = useState<Live>({ second: 0, wpm: 0, acc: 100, typed: 0 });
   const [started, setStarted] = useState(false);
   const [customOpen, setCustomOpen] = useState(false);
@@ -131,6 +173,8 @@ export function TypingTest({ initial }: { initial: InitialTest | null }) {
     setResult(null);
     setSaveState("idle");
     setIsPb(false);
+    setXpAward(null);
+    setGuestXp(null);
     setStarted(false);
     setLive({ second: 0, wpm: 0, acc: 100, typed: 0 });
   }, []);
@@ -154,6 +198,11 @@ export function TypingTest({ initial }: { initial: InitialTest | null }) {
     test.engine.freedom = settings.freedomMode;
     test.engine.confidence = settings.confidenceMode;
   }, [test, settings.freedomMode, settings.confidenceMode]);
+
+  // guests: local "tests today" / streak
+  useEffect(() => {
+    if (!user) setGuestDaily(readGuestDaily());
+  }, [user]);
 
   // show chrome again when the mouse moves
   useEffect(() => {
@@ -204,6 +253,8 @@ export function TypingTest({ initial }: { initial: InitialTest | null }) {
       if (!user) {
         setIsPb(localPb);
         setSaveState("guest");
+        setGuestXp(testXp(r));
+        setGuestDaily(bumpGuestDaily());
         return;
       }
       setSaveState("saving");
@@ -237,15 +288,31 @@ export function TypingTest({ initial }: { initial: InitialTest | null }) {
       };
       restarts.current = 0;
       incomplete.current = 0;
-      void api<{ ok?: boolean; isPb?: boolean; error?: string }>("/api/results", { body: payload }).then((res) => {
-        if (testRef.current !== cur) return;
+      void api<{ ok?: boolean; isPb?: boolean; error?: string; xp?: XpAward | null; todayTests?: number }>("/api/results", { body: payload }).then((res) => {
         if (res.ok) {
+          const award = res.data.xp ?? null;
+          const prev = progressRef.current;
+          if (award) {
+            setProgress({
+              xp: award.xp,
+              level: award.level,
+              streak: award.streak,
+              streakBest: award.streakBest,
+              streakToday: true,
+              today: dayKey(),
+              todayTests: res.data.todayTests ?? (prev?.todayTests ?? 0) + 1,
+            });
+          } else if (prev && typeof res.data.todayTests === "number") {
+            setProgress({ ...prev, todayTests: res.data.todayTests });
+          }
+          if (testRef.current !== cur) return;
           setSaveState("saved");
           setIsPb(!!res.data.isPb);
-        } else setSaveState(res.status === 422 ? "rejected" : "failed");
+          setXpAward(award);
+        } else if (testRef.current === cur) setSaveState(res.status === 422 ? "rejected" : "failed");
       });
     },
-    [user],
+    [user, setProgress],
   );
 
   const startTimer = useCallback(() => {
@@ -342,6 +409,9 @@ export function TypingTest({ initial }: { initial: InitialTest | null }) {
             isPb={isPb}
             saveState={saveState}
             signedIn={!!user}
+            effects={settings.effects}
+            xp={xpAward}
+            guestXp={guestXp}
             onNext={() => void newTest()}
             onRepeat={() => void newTest({ repeat: true })}
             onPractice={() => void newTest({ practice: practiceWords(result.missedWords) })}
@@ -367,7 +437,11 @@ export function TypingTest({ initial }: { initial: InitialTest | null }) {
             </div>
             <div className="mb-2 flex h-[calc(var(--font-size)*1.2)] items-end gap-[1.2em] font-typing text-main" style={{ fontSize: "calc(var(--font-size) * 1.05)" }} aria-live="off">
               <span className={`tabular transition-opacity duration-150 ${showStats && settings.timerStyle === "text" ? "opacity-100" : "opacity-0"}`}>{progressText}</span>
-              {settings.liveWpm ? <span className={`tabular transition-opacity duration-150 ${showStats ? "opacity-60" : "opacity-0"}`}>{Math.round(live.wpm)}</span> : null}
+              {settings.liveWpm ? (
+                <span className={`tabular transition-opacity duration-150 ${showStats ? "opacity-60" : "opacity-0"}`}>
+                  <AnimatedNumber value={Math.round(live.wpm)} duration={600} animate={settings.effects} />
+                </span>
+              ) : null}
               {settings.liveAcc ? <span className={`tabular transition-opacity duration-150 ${showStats ? "opacity-60" : "opacity-0"}`}>{Math.floor(live.acc)}%</span> : null}
             </div>
             {engine && spec ? (
@@ -383,6 +457,8 @@ export function TypingTest({ initial }: { initial: InitialTest | null }) {
                   onChange={onChange}
                   onRestart={() => void newTest()}
                   onZenFinish={() => finish(null)}
+                  effects={settings.effects}
+                  comboLabel={t("test.combo")}
                 />
               )
             ) : (
@@ -395,6 +471,12 @@ export function TypingTest({ initial }: { initial: InitialTest | null }) {
                 <RestartIcon size={19} />
               </button>
             </div>
+            <DailyLine
+              streak={user ? (progress?.streak ?? 0) : guestDaily ? effectiveStreak({ current: guestDaily.streak, best: guestDaily.best, lastDay: guestDaily.last }, dayKey()) : 0}
+              safe={user ? !!progress?.streakToday : guestDaily?.last === dayKey()}
+              today={user ? (progress?.today === dayKey() ? progress.todayTests : 0) : guestDaily?.day === dayKey() ? guestDaily.count : 0}
+              ready={user ? !!progress : guestDaily !== null}
+            />
           </div>
         )}
       </div>
@@ -433,6 +515,39 @@ export function TypingTest({ initial }: { initial: InitialTest | null }) {
           }}
         />
       ) : null}
+    </div>
+  );
+}
+
+function DailyLine({ streak, safe, today, ready }: { streak: number; safe: boolean; today: number; ready: boolean }) {
+  const t = useT();
+  if (!ready) return <div className="chrome mt-5 h-5" aria-hidden="true" />;
+  if (streak === 0) {
+    return (
+      <div className="chrome mt-5">
+        <div className="fade-in flex h-5 items-center justify-center gap-1.5 text-xs text-sub">
+          <FlameIcon size={13} className="opacity-60" />
+          {t("streak.start")}
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="chrome mt-5">
+    <div className="fade-in flex h-5 items-center justify-center gap-3 text-xs text-sub">
+      <span className={`flex items-center gap-1.5 ${safe ? "text-main" : ""}`} title={safe ? t("streak.safe") : t("streak.keep")}>
+        <FlameIcon size={13} />
+        {t("streak.daysLong", { n: streak })}
+      </span>
+      <span className="h-1 w-1 rounded-full bg-sub/60" aria-hidden="true" />
+      <span className="tabular">{today > 0 ? t("today.tests", { n: today }) : t("today.none")}</span>
+      {streak > 0 && !safe ? (
+        <>
+          <span className="h-1 w-1 rounded-full bg-sub/60" aria-hidden="true" />
+          <span>{t("streak.keep")}</span>
+        </>
+      ) : null}
+    </div>
     </div>
   );
 }

@@ -15,7 +15,7 @@ function Seg<T extends string | number | boolean>({ value, options, onChange }: 
   return (
     <div className="flex flex-wrap gap-1.5">
       {options.map((o) => (
-        <button key={String(o.v)} type="button" onClick={() => onChange(o.v)} aria-pressed={value === o.v} className={`btn px-3 py-1.5 text-sm ${value === o.v ? "active" : ""}`}>
+        <button key={String(o.v)} type="button" onClick={() => onChange(o.v)} aria-pressed={value === o.v} className={`btn rc-press px-3 py-1.5 text-sm ${value === o.v ? "active" : ""}`}>
           {o.label}
         </button>
       ))}
@@ -88,25 +88,25 @@ export function Lobby({
         ];
 
   return (
-    <div className="mx-auto w-full py-8">
+    <div className="rc-lobby mx-auto w-full py-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl text-text">{t("race.title")}</h1>
           <p className="mt-2 max-w-xl text-sm text-sub">{t("race.subtitle")}</p>
         </div>
         <div className="flex items-center gap-2 text-sm text-sub">
-          <span className="h-2 w-2 rounded-full bg-main" aria-hidden="true" />
+          <span className="rc-online-dot" aria-hidden="true" />
           {t("race.online", { n: online })}
         </div>
       </div>
 
       <div className="mt-8 grid items-start gap-4 lg:grid-cols-[1.1fr_1fr]">
-        <div className="card flex flex-col gap-5 p-6">
+        <div className="rc-card card flex flex-col gap-5 p-6">
           <div>
             <div className="label mb-2">{t("race.language")}</div>
             <Seg value={lang} options={langOptions} onChange={chooseLang} />
           </div>
-          <button type="button" onClick={() => send({ t: "quick", lang })} className="btn btn-primary w-full py-3 text-base">
+          <button type="button" onClick={() => send({ t: "quick", lang })} className="btn btn-primary rc-quick w-full py-3 text-base">
             <BoltIcon size={18} /> {t("race.quick")}
           </button>
           <p className="-mt-2 text-xs text-sub">{t("race.quickDesc")}</p>
@@ -126,7 +126,7 @@ export function Lobby({
                     placeholder={me?.name ?? "guest"}
                     aria-label={t("race.nickname")}
                   />
-                  <button type="button" className="btn shrink-0" onClick={saveNick}>
+                  <button type="button" className="btn rc-press shrink-0" onClick={saveNick}>
                     {nickSaved ? "✓" : t("race.save")}
                   </button>
                 </div>
@@ -141,7 +141,7 @@ export function Lobby({
           </div>
         </div>
 
-        <div className="card flex flex-col gap-4 p-6">
+        <div className="rc-card card flex flex-col gap-4 p-6">
           <h2 className="text-text">{t("race.create")}</h2>
           <div>
             <div className="label mb-2">{t("race.visibility")}</div>
@@ -169,7 +169,7 @@ export function Lobby({
             <div className="label mb-2">{t("race.maxPlayers")}</div>
             <Seg value={max} options={[2, 5, 10, 50, 100, 200].map((n) => ({ v: n, label: String(n) }))} onChange={setMax} />
           </div>
-          <button type="button" className="btn btn-primary mt-1 w-full" onClick={() => send({ t: "create", pub, lang, tt, len, max })}>
+          <button type="button" className="btn btn-primary rc-quick mt-1 w-full" onClick={() => send({ t: "create", pub, lang, tt, len, max })}>
             {t("race.create")}
           </button>
           <form
@@ -186,7 +186,7 @@ export function Lobby({
               placeholder={t("race.code")}
               aria-label={t("race.joinByCode")}
             />
-            <button type="submit" className="btn shrink-0">
+            <button type="submit" className="btn rc-press shrink-0">
               <LinkIcon size={16} /> {t("race.join")}
             </button>
           </form>
@@ -195,10 +195,10 @@ export function Lobby({
 
       <h2 className="mt-10 mb-3 text-sm text-sub">{t("race.rooms")}</h2>
       {rooms.length === 0 ? (
-        <p className="card px-5 py-8 text-center text-sm text-sub">{t("race.noRooms")}</p>
+        <p className="rc-card card px-5 py-8 text-center text-sm text-sub">{t("race.noRooms")}</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="table text-sm">
+          <table className="table rc-table rc-rooms text-sm">
             <thead>
               <tr>
                 <th>{t("race.code")}</th>
@@ -222,9 +222,14 @@ export function Lobby({
                       <UsersIcon size={14} /> {players}/{maxP}
                     </span>
                   </td>
-                  <td className={state === "waiting" ? "text-main" : "text-sub"}>{t(`race.state.${state}` as DictKey)}</td>
+                  <td className={state === "waiting" ? "text-main" : "text-sub"}>
+                    <span className="inline-flex items-center gap-1.5">
+                      {state === "waiting" ? <span className="rc-online-dot" aria-hidden="true" /> : null}
+                      {t(`race.state.${state}` as DictKey)}
+                    </span>
+                  </td>
                   <td className="num">
-                    <button type="button" className="btn px-3 py-1 text-xs" onClick={() => send({ t: "join", code: c })}>
+                    <button type="button" className={`btn rc-press px-3 py-1 text-xs ${state === "waiting" ? "btn-primary" : ""}`} onClick={() => send({ t: "join", code: c })}>
                       {state === "waiting" ? t("race.join") : t("race.watch")}
                     </button>
                   </td>

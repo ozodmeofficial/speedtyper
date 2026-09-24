@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { ClientMsg, LobbyRoom, PlayerTuple, RaceLanguage, ResultTuple, RoomState, ServerMsg, TextType } from "@/lib/race/protocol";
+import { P_STRIDE, type ClientMsg, type LobbyRoom, type PlayerTuple, type RaceLanguage, type ResultTuple, type RoomState, type ServerMsg, type TextType } from "@/lib/race/protocol";
+import { ProgressSmoother } from "@/lib/race/smooth";
 
 export interface RacePlayer {
   pid: number;
@@ -12,6 +13,9 @@ export interface RacePlayer {
   wpm: number;
   place: number;
   acc: number;
+  words: number;
+  /** finish time in 1/10 s (0 while racing) */
+  finishDs: number;
 }
 
 export interface RoomView {
@@ -24,6 +28,8 @@ export interface RoomView {
   state: RoomState;
   host: number;
   text: string;
+  /** number of words in text */
+  wc: number;
   src: string | null;
   /** local clock */
   startAt: number | null;
@@ -31,8 +37,10 @@ export interface RoomView {
   players: Record<number, RacePlayer>;
   you: number | null;
   results: ResultTuple[] | null;
-  /** increments on every room reset (new text) */
+  /** increments on every room reset (new room or new text) — not on reconnects */
   round: number;
+  /** race XP earned in this round (signed-in finishers) */
+  xp: { gained: number; level: number; prevLevel: number } | null;
 }
 
 export type ConnStatus = "connecting" | "open" | "reconnecting";
@@ -46,7 +54,21 @@ const toPlayer = (t: PlayerTuple): RacePlayer => ({
   wpm: t[5],
   place: t[6],
   acc: t[7],
+  words: t[8] ?? 0,
+  finishDs: t[9] ?? 0,
 });
+
+/** Merge a fresh server value into an existing player without ever moving progress backwards. */
+const mergeProgress = (prev: RacePlayer | undefined, next: RacePlayer): RacePlayer =>
+  prev
+    ? {
+        ...next,
+        chars: Math.max(prev.chars, next.chars),
+        words: Math.max(prev.words, next.words),
+        place: next.place || prev.place,
+        finishDs: next.finishDs || prev.finishDs,
+      }
+    : next;
 
 const RK_KEY = (code: string) => `st_rk_${code}`;
 export const NICK_KEY = "st_nick";
@@ -66,6 +88,10 @@ export function useRace(initialCode: string | null) {
   const retry = useRef(0);
   const closedByUs = useRef(false);
   const round = useRef(0);
+  /** identity of the current round: code + server round; progress only resets when it changes */
+  const roundKey = useRef("");
+  const textLen = useRef(1);
+  const [smoother] = useState(() => new ProgressSmoother());
 
   const send = useCallback((msg: ClientMsg) => {
     const ws = wsRef.current;
@@ -102,10 +128,25 @@ export function useRace(initialCode: string | null) {
             /* ignore */
           }
         }
+        const sm = smoother;
+        const key = `${r.code}:${r.rnd}`;
+        const sameRound = key === roundKey.current;
+        textLen.current = Math.max(1, r.text.length);
+        if (!sameRound) {
+          // new room or new text: the only authoritative reset
+          roundKey.current = key;
+          round.current++;
+          sm.reset(r.seq);
+        } else if (r.seq > sm.lastSeq) sm.accept(r.seq);
         const players: Record<number, RacePlayer> = {};
-        for (const p of r.players) players[p[0]] = toPlayer(p);
-        round.current++;
-        setRoom({
+        for (const p of r.players) {
+          const pl = toPlayer(p);
+          players[pl.pid] = pl;
+          sm.set(pl.pid, pl.place > 0 ? 1 : pl.chars / textLen.current, true);
+        }
+        setRoom((prev) => {
+          if (sameRound && prev) for (const pid in players) players[pid] = mergeProgress(prev.players[Number(pid)], players[pid]);
+          return {
           code: r.code,
           pub: r.pub,
           lang: r.lang,
@@ -115,19 +156,31 @@ export function useRace(initialCode: string | null) {
           state: r.state,
           host: r.host,
           text: r.text,
+          wc: r.wc,
           src: r.src,
           startAt: toLocal(r.startAt),
           autoAt: toLocal(r.autoAt),
           players,
           you: msg.you,
-          results: null,
+          results: sameRound && prev ? prev.results : null,
           round: round.current,
+          xp: sameRound && prev ? prev.xp : null,
+        };
         });
         setError(null);
         if (typeof window !== "undefined") window.history.replaceState(null, "", `/race?room=${r.code}`);
         return;
       }
-      case "tick":
+      case "tick": {
+        const sm = smoother;
+        // stale or reordered snapshot: never apply
+        if (!sm.accept(msg.s)) return;
+        if (msg.l) for (const id of msg.l) sm.remove(id);
+        if (msg.j) for (const p of msg.j) sm.set(p[0], p[6] > 0 ? 1 : p[4] / textLen.current, true);
+        if (msg.p) {
+          const p = msg.p;
+          for (let i = 0; i + P_STRIDE - 1 < p.length; i += P_STRIDE) sm.set(p[i], p[i + 4] > 0 ? 1 : p[i + 1] / textLen.current);
+        }
         setRoom((prev) => {
           if (!prev) return prev;
           const next: RoomView = { ...prev, players: { ...prev.players } };
@@ -137,42 +190,60 @@ export function useRace(initialCode: string | null) {
             next.autoAt = toLocal(msg.auto);
           }
           if (msg.h !== undefined) next.host = msg.h;
-          if (msg.j) for (const p of msg.j) next.players[p[0]] = toPlayer(p);
+          if (msg.j) for (const p of msg.j) next.players[p[0]] = mergeProgress(next.players[p[0]], toPlayer(p));
           if (msg.l) for (const id of msg.l) delete next.players[id];
           if (msg.cn) for (const [id, c] of msg.cn) if (next.players[id]) next.players[id] = { ...next.players[id], connected: c === 1 };
           if (msg.p) {
             const p = msg.p;
-            for (let i = 0; i + 3 < p.length; i += 4) {
+            for (let i = 0; i + P_STRIDE - 1 < p.length; i += P_STRIDE) {
               const cur = next.players[p[i]];
-              if (cur) next.players[p[i]] = { ...cur, chars: p[i + 1], wpm: p[i + 2], place: p[i + 3] };
+              if (cur)
+                next.players[p[i]] = {
+                  ...cur,
+                  chars: Math.max(cur.chars, p[i + 1]),
+                  words: Math.max(cur.words, p[i + 2]),
+                  wpm: p[i + 3],
+                  place: p[i + 4] || cur.place,
+                  finishDs: p[i + 5] || cur.finishDs,
+                };
             }
           }
           return next;
         });
         return;
+      }
       case "end":
         setRoom((prev) => {
           if (!prev) return prev;
           const players = { ...prev.players };
-          for (const [pid, place, wpm, acc] of msg.results) if (players[pid]) players[pid] = { ...players[pid], place, wpm, acc };
+          for (const [pid, place, wpm, acc, dur] of msg.results) {
+            if (!players[pid]) continue;
+            players[pid] = { ...players[pid], place, wpm, acc, finishDs: place ? Math.round(dur * 10) : 0 };
+            if (place > 0) smoother.set(pid, 1);
+          }
           return { ...prev, state: "finished", results: msg.results, players };
         });
         return;
+      case "xp":
+        setRoom((prev) => (prev && prev.code === msg.code ? { ...prev, xp: { gained: msg.gained, level: msg.level, prevLevel: msg.prevLevel } } : prev));
+        return;
       case "left":
         roomCode.current = null;
+        roundKey.current = "";
         setRoom(null);
         if (typeof window !== "undefined") window.history.replaceState(null, "", "/race");
         return;
       case "err":
         if (msg.code === "room_not_found" || msg.code === "replaced") {
           roomCode.current = null;
+          roundKey.current = "";
           setRoom(null);
           if (typeof window !== "undefined") window.history.replaceState(null, "", "/race");
         }
         setError(msg.code);
         return;
     }
-  }, []);
+  }, [smoother]);
 
   useEffect(() => {
     closedByUs.current = false;
@@ -245,5 +316,5 @@ export function useRace(initialCode: string | null) {
 
   const now = useCallback(() => Date.now(), []);
 
-  return { status, lobby, room, me, error, setError, send, setLobbyOn, now, serverOffset: offset };
+  return { status, lobby, room, me, error, setError, send, setLobbyOn, now, serverOffset: offset, smoother: smoother };
 }

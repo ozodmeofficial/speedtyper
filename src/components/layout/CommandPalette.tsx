@@ -117,6 +117,7 @@ export function CommandPalette() {
     for (const c of CONFIDENCE) out.push({ id: `conf-${c}`, group: g("settings.confidence"), label: c === "max" ? t("common.max") : c === "on" ? t("common.on") : t("common.off"), active: settings.confidenceMode === c, run: set({ confidenceMode: c }) });
     for (const q of QUICK_RESTART) out.push({ id: `qr-${q}`, group: g("settings.quickRestart"), label: t(`restart.${q}` as DictKey), active: settings.quickRestart === q, run: set({ quickRestart: q }) });
     for (const s of SOUNDS) out.push({ id: `sound-${s}`, group: g("settings.sound"), label: t(`sound.${s}` as DictKey), active: settings.sound === s, run: set({ sound: s }) });
+    out.push({ id: "effects", group: g("settings.effects"), label: onOff(!settings.effects), run: set({ effects: !settings.effects }) });
     out.push({ id: "keytips", group: g("settings.keyTips"), label: onOff(!settings.showKeyTips), run: set({ showKeyTips: !settings.showKeyTips }) });
     for (const l of UI_LANGS)
       out.push({

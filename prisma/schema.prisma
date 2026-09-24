@@ -9,27 +9,37 @@ datasource db {
 }
 
 model User {
-  id             String   @id @default(cuid())
-  username       String   @db.VarChar(24)
-  usernameLower  String   @unique @map("username_lower") @db.VarChar(24)
-  email          String?  @unique @db.VarChar(254)
-  passwordHash   String   @map("password_hash")
+  id             String    @id @default(cuid())
+  username       String    @db.VarChar(24)
+  usernameLower  String    @unique @map("username_lower") @db.VarChar(24)
+  email          String?   @unique @db.VarChar(254)
+  passwordHash   String    @map("password_hash")
   settings       Json?
   settingsAt     DateTime? @map("settings_at")
-  testsStarted   Int      @default(0) @map("tests_started")
-  testsCompleted Int      @default(0) @map("tests_completed")
-  timeTyping     Float    @default(0) @map("time_typing")
-  racesCompleted Int      @default(0) @map("races_completed")
-  raceWins       Int      @default(0) @map("race_wins")
-  banned         Boolean  @default(false)
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  testsStarted   Int       @default(0) @map("tests_started")
+  testsCompleted Int       @default(0) @map("tests_completed")
+  timeTyping     Float     @default(0) @map("time_typing")
+  racesCompleted Int       @default(0) @map("races_completed")
+  raceWins       Int       @default(0) @map("race_wins")
+  /// total XP (tests + races); level is derived from it (see src/lib/xp.ts) and cached here
+  xp             Int       @default(0)
+  level          Int       @default(1)
+  /// daily streak in Asia/Tashkent days; lastActiveDay is YYYYMMDD
+  streakCurrent  Int       @default(0) @map("streak_current")
+  streakBest     Int       @default(0) @map("streak_best")
+  lastActiveDay  Int?      @map("last_active_day")
+  banned         Boolean   @default(false)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
 
-  sessions    Session[]
-  results     Result[]
-  bests       LeaderboardBest[]
-  raceResults RaceResult[]
+  sessions     Session[]
+  results      Result[]
+  bests        LeaderboardBest[]
+  raceResults  RaceResult[]
+  xpEvents     XpEvent[]
+  achievements UserAchievement[]
 
+  @@index([xp(sort: Desc)])
   @@map("users")
 }
 
@@ -51,32 +61,32 @@ model Session {
 }
 
 model Result {
-  id             String   @id @default(cuid())
-  userId         String   @map("user_id")
-  mode           String   @db.VarChar(8)
-  mode2          String   @db.VarChar(16)
-  language       String   @db.VarChar(24)
-  punctuation    Boolean  @default(false)
-  numbers        Boolean  @default(false)
-  wpm            Float
-  raw            Float
-  acc            Float
-  consistency    Float
-  charCorrect    Int      @map("char_correct")
-  charIncorrect  Int      @map("char_incorrect")
-  charExtra      Int      @map("char_extra")
-  charMissed     Int      @map("char_missed")
-  duration       Float
-  wpmHistory     Json?    @map("wpm_history")
-  rawHistory     Json?    @map("raw_history")
-  errorHistory   Json?    @map("error_history")
-  isPb           Boolean  @default(false) @map("is_pb")
-  flagged        Boolean  @default(false)
-  flagReason     String?  @map("flag_reason") @db.VarChar(120)
+  id            String   @id @default(cuid())
+  userId        String   @map("user_id")
+  mode          String   @db.VarChar(8)
+  mode2         String   @db.VarChar(16)
+  language      String   @db.VarChar(24)
+  punctuation   Boolean  @default(false)
+  numbers       Boolean  @default(false)
+  wpm           Float
+  raw           Float
+  acc           Float
+  consistency   Float
+  charCorrect   Int      @map("char_correct")
+  charIncorrect Int      @map("char_incorrect")
+  charExtra     Int      @map("char_extra")
+  charMissed    Int      @map("char_missed")
+  duration      Float
+  wpmHistory    Json?    @map("wpm_history")
+  rawHistory    Json?    @map("raw_history")
+  errorHistory  Json?    @map("error_history")
+  isPb          Boolean  @default(false) @map("is_pb")
+  flagged       Boolean  @default(false)
+  flagReason    String?  @map("flag_reason") @db.VarChar(120)
   /// Asia/Tashkent calendar day, YYYYMMDD
-  dayKey         Int      @map("day_key")
-  createdAt      DateTime @default(now()) @map("created_at")
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dayKey        Int      @map("day_key")
+  createdAt     DateTime @default(now()) @map("created_at")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt(sort: Desc)])
   @@index([userId, mode, mode2, language, punctuation, numbers, wpm(sort: Desc)])
@@ -135,4 +145,30 @@ model RaceResult {
   @@index([userId, createdAt(sort: Desc)])
   @@index([raceId])
   @@map("race_results")
+}
+
+/// One XP grant (a saved test, a race, or the initial backfill). Used for weekly XP and XP history.
+model XpEvent {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  amount    Int
+  /// "test" | "race"
+  source    String   @db.VarChar(8)
+  refId     String?  @map("ref_id") @db.VarChar(40)
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt, userId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("xp_events")
+}
+
+model UserAchievement {
+  userId     String   @map("user_id")
+  key        String   @db.VarChar(32)
+  unlockedAt DateTime @default(now()) @map("unlocked_at")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, key])
+  @@map("user_achievements")
 }

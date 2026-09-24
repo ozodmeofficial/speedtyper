@@ -82,6 +82,8 @@ const KEYFRAME_EVERY = 10;
 const SLOW_CLIENT_BYTES = 512 * 1024;
 const DEAD_CLIENT_BYTES = 4 * 1024 * 1024;
 
+const finishDs = (p: Player) => (p.place > 0 ? Math.max(1, Math.round(p.finishMs / 100)) : 0);
+
 export class Room {
   readonly code: string;
   readonly pub: boolean;
@@ -116,6 +118,10 @@ export class Room {
   private stateChanged = false;
   private hostChanged = false;
   private tickCount = 0;
+  /** per-room snapshot sequence number */
+  seq = 0;
+  /** round counter (increments on rematch) */
+  round = 1;
   /** stats for the load test / monitoring */
   bytesSent = 0;
   snapshotsDropped = 0;
@@ -158,7 +164,7 @@ export class Room {
   }
 
   private tuple(p: Player): PlayerTuple {
-    return [p.pid, p.name, p.userId ? 1 : 0, p.connected ? 1 : 0, p.chars, Math.round(p.wpm), p.place, Math.round(p.acc)];
+    return [p.pid, p.name, p.userId ? 1 : 0, p.connected ? 1 : 0, p.chars, Math.round(p.wpm), p.place, Math.round(p.acc), p.words, finishDs(p)];
   }
 
   info(): RoomInfo {
@@ -176,6 +182,9 @@ export class Room {
       startAt: this.startAt,
       autoAt: this.autoAt,
       players: this.racers.map((p) => this.tuple(p)),
+      wc: this.wordCount,
+      rnd: this.round,
+      seq: this.seq,
     };
   }
 
@@ -376,6 +385,7 @@ export class Room {
     this.autoAt = null;
     this.nextPlace = 1;
     this.endedAt = 0;
+    this.round++;
     for (const pl of [...this.players.values()]) {
       if (!pl.connected || pl.left) {
         this.players.delete(pl.pid);
@@ -410,7 +420,6 @@ export class Room {
     if (!p || p.place > 0 || p.left) return false;
     if (!Number.isInteger(chars) || !Number.isInteger(words) || !Number.isInteger(errors)) return false;
     let c = Math.max(0, Math.min(chars, this.textLength));
-    const w = Math.max(0, Math.min(words, this.wordCount));
     const since = p.lastProgressAt || this.startAt;
     const dt = Math.max(0, now - since) / 1000;
     const allowed = p.chars + Math.ceil(MAX_CPS * dt) + BURST_CHARS;
@@ -418,6 +427,10 @@ export class Room {
       c = allowed;
       p.suspicious++;
     }
+    // Progress is monotonic within a round: a typo or backspace on the client
+    // (or a stale/reordered report) must never move a player backwards.
+    c = Math.max(c, p.chars);
+    const w = Math.max(p.words, Math.max(0, Math.min(words, this.wordCount)));
     if (c !== p.chars) p.lastProgressChange = now;
     p.chars = c;
     p.words = w;
@@ -443,6 +456,9 @@ export class Room {
     p.place = this.nextPlace++;
     p.finishMs = now - this.startAt;
     p.wpm = this.wpmFor(p.chars, p.finishMs);
+    // a finisher is at the line: show a full lane (wpm is already computed from correct chars)
+    p.chars = this.textLength;
+    p.words = this.wordCount;
     p.acc = Number.isFinite(acc) ? Math.max(0, Math.min(100, acc)) : 0;
     p.lastProgressChange = now;
     this.dirty.add(p.pid);
@@ -545,7 +561,7 @@ export class Room {
       this.pendingJoins.length > 0 || this.pendingLeaves.length > 0 || this.pendingConn.size > 0 || this.stateChanged || this.hostChanged;
     if (!hasReliable && this.dirty.size === 0 && !keyframe) return;
 
-    const msg: Extract<ServerMsg, { t: "tick" }> = { t: "tick", now };
+    const msg: Extract<ServerMsg, { t: "tick" }> = { t: "tick", now, s: ++this.seq };
     if (this.stateChanged) {
       msg.st = this.state;
       msg.at = this.startAt;
@@ -561,7 +577,7 @@ export class Room {
       for (const id of ids) {
         const p = this.players.get(id);
         if (!p) continue;
-        flat.push(p.pid, p.chars, Math.round(p.wpm), p.place);
+        flat.push(p.pid, p.chars, p.words, Math.round(p.wpm), p.place, finishDs(p));
       }
       if (flat.length) msg.p = flat;
     }

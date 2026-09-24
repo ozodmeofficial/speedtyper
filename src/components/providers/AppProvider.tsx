@@ -12,6 +12,7 @@ import {
 } from "@/lib/settings";
 import { THEME_VARS, COLOR_KEYS, type ThemeColors } from "@/lib/themes";
 import { api, writeCookie } from "@/lib/client/api";
+import type { UserProgress } from "@/lib/xp";
 
 export interface CurrentUser {
   id: string;
@@ -20,6 +21,9 @@ export interface CurrentUser {
 
 interface AppCtx {
   user: CurrentUser | null;
+  /** XP / level / streak of the signed-in user (null for guests) */
+  progress: UserProgress | null;
+  setProgress: (p: UserProgress | null) => void;
   settings: Settings;
   update: (patch: Partial<Settings>) => void;
   replace: (s: Settings) => void;
@@ -55,16 +59,19 @@ function persistLocal(s: Settings, at: number) {
 
 export function AppProvider({
   user,
+  initialProgress = null,
   initialSettings,
   serverSettings,
   children,
 }: {
   user: CurrentUser | null;
+  initialProgress?: UserProgress | null;
   initialSettings: Settings;
   serverSettings: { settings: unknown; at: number } | null;
   children: React.ReactNode;
 }) {
   const [settings, setSettings] = useState<Settings>(initialSettings);
+  const [progress, setProgress] = useState<UserProgress | null>(initialProgress);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [paletteQuery, setPaletteQuery] = useState("");
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -135,8 +142,8 @@ export function AppProvider({
   }, []);
 
   const value = useMemo(
-    () => ({ user, settings, update, replace, previewTheme, paletteOpen, openPalette, closePalette, paletteQuery }),
-    [user, settings, update, replace, previewTheme, paletteOpen, openPalette, closePalette, paletteQuery],
+    () => ({ user, progress, setProgress, settings, update, replace, previewTheme, paletteOpen, openPalette, closePalette, paletteQuery }),
+    [user, progress, settings, update, replace, previewTheme, paletteOpen, openPalette, closePalette, paletteQuery],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

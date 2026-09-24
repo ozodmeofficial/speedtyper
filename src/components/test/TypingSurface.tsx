@@ -5,6 +5,7 @@ import type { TypingEngine } from "@/lib/typing/engine";
 import type { Settings } from "@/lib/settings";
 import { playKey } from "@/lib/client/sound";
 import { useT } from "@/components/providers/I18nProvider";
+import { prefersReducedMotion } from "@/lib/client/motion";
 
 const RENDER_AHEAD = 140;
 const SENTINEL = " ";
@@ -65,9 +66,16 @@ export interface TypingSurfaceProps {
   onZenFinish?: () => void;
   /** show caps-lock hint etc. */
   className?: string;
+  /** caret glow, completed-word flash and the combo counter */
+  effects?: boolean;
+  /** tooltip of the combo counter */
+  comboLabel?: string;
 }
 
-export function TypingSurface({ engine, settings, disabled, autoFocus = true, onChange, onRestart, onZenFinish, className }: TypingSurfaceProps) {
+const FLASH_POOL = 3;
+const MILESTONES = new Set([10, 25, 50, 75, 100]);
+
+export function TypingSurface({ engine, settings, disabled, autoFocus = true, onChange, onRestart, onZenFinish, className, effects = false, comboLabel }: TypingSurfaceProps) {
   const t = useT();
   const [, setVersion] = useState(0);
   const [firstIndex, setFirstIndex] = useState(0);
@@ -85,6 +93,19 @@ export function TypingSurface({ engine, settings, disabled, autoFocus = true, on
   settingsRef.current = settings;
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+  // effects state lives in refs: the DOM is updated directly, never via React state
+  const flashRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const flashNext = useRef(0);
+  const pendingFlash = useRef<{ i: number; ok: boolean } | null>(null);
+  const prevIndex = useRef(engine.index);
+  const committedUpTo = useRef(engine.index);
+  const combo = useRef(0);
+  const comboRef = useRef<HTMLDivElement>(null);
+  const comboNRef = useRef<HTMLSpanElement>(null);
+  const reduced = useRef(false);
+  useEffect(() => {
+    reduced.current = prefersReducedMotion();
+  }, []);
 
   engine.minIndex = firstIndex;
 
@@ -231,6 +252,17 @@ export function TypingSurface({ engine, settings, disabled, autoFocus = true, on
     const clip = clipRef.current;
     const caret = caretRef.current;
     if (!wordsEl || !clip || !caret) return;
+    // effects: detect a freshly committed word (flash + combo)
+    const idx = engine.index;
+    const prev = prevIndex.current;
+    prevIndex.current = idx;
+    if (effects && engine.mode !== "zen" && idx === prev + 1 && prev >= committedUpTo.current) {
+      committedUpTo.current = idx;
+      const ok = engine.inputs[prev] === engine.words[prev];
+      updateCombo(ok);
+      if (!reduced.current) pendingFlash.current = { i: prev, ok };
+    }
+
     const active = wordsEl.querySelector<HTMLElement>(`[data-i="${engine.index}"]`);
     if (!active) return;
     const em = parseFloat(getComputedStyle(wordsEl).fontSize) || 24;
@@ -251,6 +283,20 @@ export function TypingSurface({ engine, settings, disabled, autoFocus = true, on
       if (next !== firstIndex) {
         setFirstIndex(next);
         return;
+      }
+    }
+
+    // reads for the pending flash happen before any style writes below (no layout thrash)
+    let flash: { el: HTMLDivElement; ok: boolean; x: number; y: number; w: number; h: number } | null = null;
+    const pf = pendingFlash.current;
+    pendingFlash.current = null;
+    if (pf) {
+      const wEl = wordsEl.querySelector<HTMLElement>(`[data-i="${pf.i}"]`);
+      const el = flashRefs.current[flashNext.current++ % FLASH_POOL];
+      if (wEl && el) {
+        const px = em * 0.16;
+        const py = em * 0.14;
+        flash = { el, ok: pf.ok, x: wEl.offsetLeft - px, y: wEl.offsetTop - py, w: wEl.offsetWidth + px * 2, h: wEl.offsetHeight + py * 2 };
       }
     }
 
@@ -290,7 +336,50 @@ export function TypingSurface({ engine, settings, disabled, autoFocus = true, on
       caret.style.transform = `translate(${cx}px, ${cy}px)`;
       lastCaret.current = { x: cx, y: cy };
     }
+    if (flash) {
+      const { el, ok, x: fx, y: fy, w: fw, h: fh } = flash;
+      el.getAnimations().forEach((a) => a.cancel());
+      el.className = `word-flash ${ok ? "ok" : "bad"}`;
+      el.style.width = `${fw}px`;
+      el.style.height = `${fh}px`;
+      const at = `translate(${fx}px, ${fy}px)`;
+      el.animate(
+        ok
+          ? [
+              { opacity: 0, transform: `${at} scale(0.94)` },
+              { opacity: 1, transform: `${at} scale(1.03)`, offset: 0.3 },
+              { opacity: 0, transform: `${at} scale(1)` },
+            ]
+          : [
+              { opacity: 0, transform: at },
+              { opacity: 0.9, transform: at, offset: 0.25 },
+              { opacity: 0, transform: at },
+            ],
+        { duration: ok ? 480 : 620, easing: "ease-out" },
+      );
+    }
   });
+
+  function updateCombo(ok: boolean) {
+    combo.current = ok ? combo.current + 1 : 0;
+    const box = comboRef.current;
+    const num = comboNRef.current;
+    if (!box || !num) return;
+    const c = combo.current;
+    if (c > 0) num.textContent = String(c);
+    box.classList.toggle("show", c >= 3);
+    if (!reduced.current && (MILESTONES.has(c) || (c > 100 && c % 50 === 0))) {
+      num.animate(
+        [
+          { transform: "scale(1)", opacity: 1 },
+          { transform: "scale(1.5)", opacity: 1, offset: 0.35 },
+          { transform: "scale(1)", opacity: 1 },
+        ],
+        { duration: 560, easing: "cubic-bezier(0.2, 1.4, 0.35, 1)" },
+      );
+      box.animate([{ filter: "none" }, { filter: "drop-shadow(0 0 6px var(--main))", offset: 0.35 }, { filter: "none" }], { duration: 700 });
+    }
+  }
 
   // re-measure on resize / font load
   useEffect(() => {
@@ -324,6 +413,7 @@ export function TypingSurface({ engine, settings, disabled, autoFocus = true, on
     settings.caretStyle,
     settings.smoothCaret ? "smooth" : "",
     !typingStarted ? "idle" : "",
+    effects ? "glow" : "",
   ].join(" ");
 
   return (
@@ -357,14 +447,34 @@ export function TypingSurface({ engine, settings, disabled, autoFocus = true, on
         }}
         onBlur={() => setFocused(false)}
       />
+      {effects ? (
+        <div ref={comboRef} className="combo" aria-hidden="true" title={comboLabel}>
+          <span className="combo-x">×</span>
+          <span ref={comboNRef} className="combo-n">
+            0
+          </span>
+        </div>
+      ) : null}
       {capsLock && focused ? (
         <div className="absolute -top-9 left-1/2 z-10 -translate-x-1/2 rounded-md bg-main px-3 py-1 font-sans text-xs text-bg">
           {t("test.capsLock")}
         </div>
       ) : null}
       <div ref={clipRef} className="words-clip" style={settings.tapeMode ? { height: "1.5em" } : undefined}>
-        <div ref={wordsRef} className={`words${settings.tapeMode ? " tape" : ""}${showBlur ? " blurred" : ""}`} style={{ position: "relative" }}>
+        <div ref={wordsRef} className={`words${settings.tapeMode ? " tape" : ""}${showBlur ? " blurred" : ""}${effects ? " fx" : ""}`} style={{ position: "relative" }}>
           {items}
+          {effects
+            ? Array.from({ length: FLASH_POOL }, (_, i) => (
+                <div
+                  key={`fx${i}`}
+                  aria-hidden="true"
+                  className="word-flash"
+                  ref={(el) => {
+                    flashRefs.current[i] = el;
+                  }}
+                />
+              ))
+            : null}
           <div
             ref={caretRef}
             className={caretCls}

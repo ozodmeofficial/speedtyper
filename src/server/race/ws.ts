@@ -5,7 +5,7 @@ import { RaceManager } from "./manager";
 import type { Conn, Room } from "./room";
 import { raceText } from "./text";
 import { saveRace } from "./persist";
-import { MAX_MESSAGE_BYTES } from "../../lib/race/protocol";
+import { MAX_MESSAGE_BYTES, type ServerMsg } from "../../lib/race/protocol";
 import { parseCookies, resolveSession, SESSION_COOKIE } from "../auth/session";
 import { limiter } from "../ratelimit";
 
@@ -73,10 +73,20 @@ function allowedOrigin(origin: string | undefined, host: string | undefined): bo
 }
 
 export function createRaceServer(): RaceServer {
-  const manager = new RaceManager({
+  const manager: RaceManager = new RaceManager({
     textFor: raceText,
     onFinish: (s) => {
-      saveRace(s).catch((e) => console.error("[race] save failed", e));
+      saveRace(s)
+        .then((awards) => {
+          if (awards.size === 0) return;
+          // tell each signed-in finisher (still in that room) what they earned
+          for (const c of manager.conns) {
+            if (!c.userId || c.room?.code !== s.code) continue;
+            const a = awards.get(c.userId);
+            if (a) c.send(JSON.stringify({ t: "xp", code: s.code, gained: a.gained, level: a.level, prevLevel: a.prevLevel } satisfies ServerMsg));
+          }
+        })
+        .catch((e) => console.error("[race] save failed", e));
     },
   });
   manager.start();

@@ -15,6 +15,11 @@ export async function getProfile(username: string) {
       timeTyping: true,
       racesCompleted: true,
       raceWins: true,
+      xp: true,
+      level: true,
+      streakCurrent: true,
+      streakBest: true,
+      lastActiveDay: true,
       banned: true,
     },
   });
@@ -92,4 +97,24 @@ export function recentRaces(userId: string) {
     take: 10,
     select: { id: true, place: true, wpm: true, acc: true, finished: true, createdAt: true, race: { select: { playerCount: true, language: true, textType: true } } },
   });
+}
+
+/** Best 60 s time-test wpm (any language) — used for the speed rank. */
+export async function best60(userId: string): Promise<number | null> {
+  const r = await prisma.result.findFirst({
+    where: { userId, mode: "time", mode2: "60", flagged: false },
+    orderBy: { wpm: "desc" },
+    select: { wpm: true },
+  });
+  return r?.wpm ?? null;
+}
+
+/** XP per Asia/Tashkent day over the last `days` days. */
+export async function xpPerDay(userId: string, days = 90): Promise<Map<number, number>> {
+  const since = new Date(Date.now() - (days + 1) * 86400_000);
+  const rows = await prisma.$queryRaw<{ day: number; n: bigint }[]>`
+    SELECT to_char(created_at + interval '5 hours', 'YYYYMMDD')::int AS day, SUM(amount) AS n
+    FROM xp_events WHERE user_id = ${userId} AND created_at >= ${since}
+    GROUP BY 1`;
+  return new Map(rows.map((r) => [r.day, Number(r.n)]));
 }

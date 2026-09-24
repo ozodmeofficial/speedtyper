@@ -11,7 +11,7 @@
  */
 import { execSync } from "node:child_process";
 import WebSocket from "ws";
-import type { ClientMsg, ServerMsg } from "../src/lib/race/protocol";
+import { P_STRIDE, type ClientMsg, type ServerMsg } from "../src/lib/race/protocol";
 
 const URL_WS = process.env.URL ?? "ws://localhost:3000/ws";
 const ORIGIN = process.env.ORIGIN ?? URL_WS.replace(/^ws/, "http").replace(/\/ws$/, "");
@@ -27,8 +27,14 @@ interface Stats {
   msgs: number;
   bytes: number;
   errors: string[];
+  /** per-player progress values checked on every client */
+  progressSamples: number;
+  /** a client received a lower chars/words value for a player than before */
+  progressDecreases: number;
+  /** a client received a snapshot whose sequence number wasn't newer */
+  seqViolations: number;
 }
-const stats: Stats = { latencies: [], msgs: 0, bytes: 0, errors: [] };
+const stats: Stats = { latencies: [], msgs: 0, bytes: 0, errors: [], progressSamples: 0, progressDecreases: 0, seqViolations: 0 };
 
 class Bot {
   ws!: WebSocket;
@@ -43,6 +49,8 @@ class Bot {
   place = 0;
   chars = 0;
   private timer: NodeJS.Timeout | null = null;
+  private lastSeq = -1;
+  private seen = new Map<number, { c: number; w: number }>();
   private waiters: ((m: ServerMsg) => boolean)[] = [];
   readonly cps: number;
 
@@ -93,10 +101,28 @@ class Bot {
         this.code = m.room.code;
         this.text = m.room.text;
         this.words = m.room.text.split(" ").length;
+        this.lastSeq = m.room.seq;
+        for (const p of m.room.players) this.seen.set(p[0], { c: p[4], w: p[8] });
         break;
       case "tick":
         // server and bots share the machine clock: one-way delivery latency
         stats.latencies.push(Date.now() - m.now);
+        if (m.s <= this.lastSeq) stats.seqViolations++;
+        this.lastSeq = Math.max(this.lastSeq, m.s);
+        if (m.p) {
+          for (let i = 0; i + P_STRIDE - 1 < m.p.length; i += P_STRIDE) {
+            const pid = m.p[i];
+            const c = m.p[i + 1];
+            const w = m.p[i + 2];
+            const prev = this.seen.get(pid);
+            stats.progressSamples++;
+            if (prev && (c < prev.c || w < prev.w)) {
+              stats.progressDecreases++;
+              if (stats.errors.length < 20) stats.errors.push(`${this.name}: pid ${pid} progress went back ${prev.c}->${c} / ${prev.w}->${w}`);
+            }
+            this.seen.set(pid, { c: Math.max(c, prev?.c ?? 0), w: Math.max(w, prev?.w ?? 0) });
+          }
+        }
         if (m.at) this.startAt = m.at;
         if (m.st === "racing" && !this.racing) this.beginTyping();
         break;
@@ -124,7 +150,9 @@ class Bot {
         if (this.timer) clearInterval(this.timer);
         return;
       }
-      this.send({ t: "p", c: this.chars, w, e: 0 });
+      // real clients dip on typos/backspace; the server must never broadcast a decrease
+      const typo = Math.random() < 0.2 ? Math.floor(Math.random() * 6) : 0;
+      this.send({ t: "p", c: Math.max(0, this.chars - typo), w, e: typo ? 1 : 0 });
     }, 250);
   }
 
@@ -214,6 +242,7 @@ async function main() {
     raceDurationMs: results.map((r) => r.raceMs),
     finishedPerRoom: results.map((r) => r.finished),
     snapshotLatencyMs: { p50: pct(lat, 50), p95: pct(lat, 95), p99: pct(lat, 99), max: lat.length ? Math.max(...lat) : 0, samples: lat.length },
+    progress: { samples: stats.progressSamples, decreases: stats.progressDecreases, seqViolations: stats.seqViolations },
     messagesReceived: stats.msgs,
     bytesReceivedMB: +(stats.bytes / 1024 / 1024).toFixed(2),
     serverCpuPercent: cpu.length ? { avg: +(cpu.reduce((a, b) => a + b, 0) / cpu.length).toFixed(1), max: Math.max(...cpu) } : null,
@@ -225,6 +254,9 @@ async function main() {
 
   const ok =
     stats.errors.length === 0 &&
+    stats.progressDecreases === 0 &&
+    stats.seqViolations === 0 &&
+    stats.progressSamples > 0 &&
     results.every((r) => r.finished === PLAYERS && r.places.size === PLAYERS) &&
     pct(lat, 99) < 250;
   console.log(ok ? "PASS" : "FAIL");

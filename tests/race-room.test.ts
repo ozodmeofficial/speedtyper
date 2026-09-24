@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Room, type Conn, type RaceSummary } from "@/server/race/room";
 import { RaceManager } from "@/server/race/manager";
-import { COUNTDOWN_MS, PUBLIC_AUTOSTART_MS, type ServerMsg } from "@/lib/race/protocol";
+import { COUNTDOWN_MS, P_STRIDE, PUBLIC_AUTOSTART_MS, type ServerMsg } from "@/lib/race/protocol";
 
 let nextId = 1;
 class FakeConn implements Conn {
@@ -159,9 +159,97 @@ describe("Room state machine", () => {
     const ticks = conns[0].msgs.filter((m) => m.t === "tick");
     expect(ticks.length).toBe(1);
     const tick = ticks[0] as Extract<ServerMsg, { t: "tick" }>;
-    expect(tick.p!.length).toBe(5 * 4);
+    expect(tick.p!.length).toBe(5 * P_STRIDE);
     expect(conns[4].msgs.filter((m) => m.t === "tick").length).toBe(0);
     expect(room.snapshotsDropped).toBeGreaterThan(0);
+  });
+});
+
+describe("Room progress is monotonic", () => {
+  function racingRoom(n = 2) {
+    const room = makeRoom(false);
+    const conns = Array.from({ length: n }, (_, i) => new FakeConn(`p${i}`));
+    for (const c of conns) room.join(c, 0);
+    room.requestStart(conns[0], 0);
+    room.tick(COUNTDOWN_MS + 1);
+    return { room, conns, start: room.startAt! };
+  }
+
+  it("never lowers a player's chars/words (typos, backspace, stale reports)", () => {
+    const { room, conns, start } = racingRoom(1);
+    const [a] = conns;
+    room.progress(a, 12, 2, 0, start + 2000);
+    room.progress(a, 6, 1, 1, start + 2250); // typo in the current word / reordered report
+    const p = room.players.get(1)!;
+    expect(p.chars).toBe(12);
+    expect(p.words).toBe(2);
+    room.progress(a, 0, 0, 1, start + 2500); // reload that restarted from zero
+    expect(p.chars).toBe(12);
+    room.progress(a, 17, 3, 1, start + 3000);
+    expect(p.chars).toBe(17);
+    expect(p.words).toBe(3);
+  });
+
+  it("broadcast snapshots carry increasing sequence numbers and never decrease per player", () => {
+    const { room, conns, start } = racingRoom(3);
+    const observer = conns[0];
+    observer.msgs = [];
+    let t = start;
+    for (let i = 0; i < 60; i++) {
+      t += 200;
+      for (const [k, c] of conns.entries()) {
+        const jitter = Math.floor(Math.random() * 8) - 5; // clients sometimes report less than before
+        room.progress(c, Math.max(0, Math.floor(((i + 1) * (k + 2)) / 3) + jitter), Math.floor(i / 6), 0, t);
+      }
+      room.tick(t);
+    }
+    const ticks = observer.msgs.filter((m): m is Extract<ServerMsg, { t: "tick" }> => m.t === "tick");
+    expect(ticks.length).toBeGreaterThan(10);
+    let lastSeq = -1;
+    const lastChars = new Map<number, number>();
+    const lastWords = new Map<number, number>();
+    for (const m of ticks) {
+      expect(m.s).toBeGreaterThan(lastSeq);
+      lastSeq = m.s;
+      const p = m.p ?? [];
+      for (let i = 0; i < p.length; i += P_STRIDE) {
+        expect(p[i + 1]).toBeGreaterThanOrEqual(lastChars.get(p[i]) ?? 0);
+        expect(p[i + 2]).toBeGreaterThanOrEqual(lastWords.get(p[i]) ?? 0);
+        lastChars.set(p[i], p[i + 1]);
+        lastWords.set(p[i], p[i + 2]);
+      }
+    }
+  });
+
+  it("finishers are shown at the finish line; rejoin state carries progress + seq; rematch is a new round", () => {
+    const { room, conns, start } = racingRoom(2);
+    const [a, b] = conns;
+    room.progress(a, 10, 2, 0, start + 2000);
+    room.progress(b, 8, 1, 0, start + 2000);
+    room.tick(start + 2100);
+    // b reloads the page mid-race: full state includes words + current seq
+    const rk = b.last("room")!.rk!;
+    room.disconnect(b, start + 2200);
+    const b2 = new FakeConn("p1");
+    room.join(b2, start + 2300, rk);
+    const full = b2.last("room")!;
+    const tuple = full.room.players.find((p) => p[0] === 2)!;
+    expect(tuple[4]).toBe(8);
+    expect(tuple[8]).toBe(1);
+    expect(full.room.seq).toBe(room.seq);
+    expect(full.room.wc).toBe(4);
+    // a finishes with one mistyped word: lane still reaches 100 %
+    expect(room.finish(a, TEXT.length - 6, 4, 1, 95, start + 5000)).toBe(true);
+    const pa = room.players.get(1)!;
+    expect(pa.chars).toBe(TEXT.length);
+    expect(pa.words).toBe(4);
+    room.finish(b2, TEXT.length, 4, 0, 100, start + 6000);
+    expect(room.state).toBe("finished");
+    const rnd = room.round;
+    expect(room.rematch(a, start + 7000, "one two", null)).toBeNull();
+    expect(room.round).toBe(rnd + 1);
+    expect(a.last("room")!.room.rnd).toBe(rnd + 1);
+    expect(room.players.get(1)!.chars).toBe(0);
   });
 });
 

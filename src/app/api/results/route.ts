@@ -5,7 +5,8 @@ import { boardFor, validateResult } from "@/lib/anticheat";
 import { limiter } from "@/server/ratelimit";
 import { readJson } from "@/server/body";
 import { recordBest } from "@/server/leaderboard";
-import { dayKey } from "@/lib/format";
+import { dayKey, dayKeyToUtcMidnight } from "@/lib/format";
+import { awardTestXp } from "@/server/xp";
 
 export async function POST(req: NextRequest) {
   if (!csrfOk(req)) return csrfError();
@@ -68,5 +69,14 @@ export async function POST(req: NextRequest) {
 
   const board = boardFor(r);
   if (board && !check.flagged) await recordBest(board, userId, saved.id, r, now);
-  return withSession(json({ ok: true, id: saved.id, isPb, flagged: check.flagged }), s);
+  let xp = null;
+  if (!check.flagged) {
+    try {
+      xp = await awardTestXp(userId, { id: saved.id, duration: r.duration, wpm: r.wpm, acc: r.acc, mode: r.mode, mode2: r.mode2 }, now);
+    } catch (err) {
+      console.error("[xp] test award failed", err);
+    }
+  }
+  const todayTests = await prisma.result.count({ where: { userId, createdAt: { gte: new Date(dayKeyToUtcMidnight(dayKey(now))) } } });
+  return withSession(json({ ok: true, id: saved.id, isPb, flagged: check.flagged, xp, todayTests }), s);
 }

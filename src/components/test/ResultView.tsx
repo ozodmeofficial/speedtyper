@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useT } from "@/components/providers/I18nProvider";
 import { ChevronRightIcon, ImageIcon, RepeatIcon, TargetIcon, CrownIcon } from "@/components/ui/icons";
 import { ResultChart } from "./ResultChart";
@@ -9,6 +9,10 @@ import type { EngineResult } from "@/lib/typing/engine";
 import type { TestSpec } from "./testSetup";
 import { languageInfo } from "@/lib/typing/words";
 import type { DictKey } from "@/lib/i18n";
+import type { XpAward } from "@/lib/xp";
+import { AnimatedNumber } from "@/components/xp/AnimatedNumber";
+import { XpPanel } from "@/components/xp/XpPanel";
+import { confetti } from "@/lib/client/motion";
 
 export interface FinalResult extends EngineResult {
   failed: "min_wpm" | "min_acc" | null;
@@ -17,9 +21,9 @@ export interface FinalResult extends EngineResult {
 
 export type SaveState = "idle" | "saving" | "saved" | "failed" | "rejected" | "guest";
 
-function Stat({ label, value, title, big }: { label: string; value: React.ReactNode; title?: string; big?: boolean }) {
+function Stat({ label, value, title, big, delay = 0 }: { label: string; value: React.ReactNode; title?: string; big?: boolean; delay?: number }) {
   return (
-    <div title={title} className="min-w-0">
+    <div title={title} className="reveal min-w-0" style={{ ["--d" as string]: `${delay}ms` }}>
       <div className={big ? "text-[2rem] leading-none text-sub" : "text-sm leading-tight text-sub"}>{label}</div>
       <div className={big ? "font-typing text-[4rem] leading-[1.1] text-main" : "font-typing text-[1.6rem] leading-tight text-main"}>{value}</div>
     </div>
@@ -32,6 +36,9 @@ export function ResultView({
   isPb,
   saveState,
   signedIn,
+  effects,
+  xp,
+  guestXp,
   onNext,
   onRepeat,
   onPractice,
@@ -41,6 +48,9 @@ export function ResultView({
   isPb: boolean;
   saveState: SaveState;
   signedIn: boolean;
+  effects: boolean;
+  xp: XpAward | null;
+  guestXp: number | null;
   onNext: () => void;
   onRepeat: () => void;
   onPractice: () => void;
@@ -51,6 +61,17 @@ export function ResultView({
   const failed = result.failed || result.invalid;
   const c = result.counts;
   const correct = c.correctChars + c.correctSpaces;
+  const num = (v: number, suffix = "", delay = 0) => (
+    <AnimatedNumber value={Math.round(v)} from={effects ? 0 : Math.round(v)} animate={effects} duration={800} delay={delay} suffix={suffix} />
+  );
+
+  // personal-best celebration (once per result)
+  const celebrated = useRef(false);
+  useEffect(() => {
+    if (!isPb || failed || !effects || celebrated.current) return;
+    celebrated.current = true;
+    confetti();
+  }, [isPb, failed, effects]);
 
   const showToast = (m: string) => {
     setToast(m);
@@ -103,24 +124,24 @@ export function ResultView({
   };
 
   return (
-    <div className="fade-in mx-auto w-full" aria-live="polite">
+    <div className="fade-in mx-auto w-full" aria-live="polite" data-fx={effects ? "1" : "0"}>
       <div ref={shotRef} className="relative">
         <div className="grid grid-cols-1 gap-x-10 gap-y-6 md:grid-cols-[auto_1fr]">
           <div className="flex gap-10 md:flex-col md:gap-3">
-            <Stat big label="wpm" value={Math.round(result.wpm)} title={`${result.wpm.toFixed(2)} wpm`} />
-            <Stat big label={t("result.acc")} value={`${Math.round(result.acc)}%`} title={`${result.acc.toFixed(2)}%`} />
+            <Stat big label="wpm" value={num(result.wpm)} title={`${result.wpm.toFixed(2)} wpm`} />
+            <Stat big label={t("result.acc")} value={num(result.acc, "%", 80)} title={`${result.acc.toFixed(2)}%`} delay={60} />
             {isPb && !failed ? (
-              <div className="flex items-center gap-1.5 text-sm text-main">
+              <div className="lvl-pop flex items-center gap-1.5 text-sm text-main glow-text">
                 <CrownIcon size={16} /> {t("result.pb")}
               </div>
             ) : null}
           </div>
-          <div className="min-w-0 self-center">
+          <div className="reveal min-w-0 self-center" style={{ ["--d" as string]: "120ms" }}>
             <ResultChart wpm={result.wpmHistory} raw={result.rawHistory} errors={result.errorHistory} />
           </div>
         </div>
         <div className="mt-6 flex flex-wrap items-start gap-x-12 gap-y-4">
-          <div className="min-w-0">
+          <div className="reveal min-w-0" style={{ ["--d" as string]: "180ms" }}>
             <div className="text-sm leading-tight text-sub">{t("result.testType")}</div>
             <div className="text-[1rem] leading-snug text-main">
               {typeLabel}
@@ -130,14 +151,15 @@ export function ResultView({
               {spec.numbers ? <><br />{t("config.numbers")}</> : null}
             </div>
           </div>
-          <Stat label={t("result.raw")} value={Math.round(result.raw)} title={`${result.raw.toFixed(2)}`} />
+          <Stat label={t("result.raw")} value={num(result.raw, "", 150)} title={`${result.raw.toFixed(2)}`} delay={210} />
           <Stat
             label={t("result.characters")}
             value={`${correct}/${c.incorrectChars}/${c.extraChars}/${c.missedChars}`}
             title={t("result.charsTip")}
+            delay={240}
           />
-          <Stat label={t("result.consistency")} value={`${Math.round(result.consistency)}%`} title={`${result.consistency.toFixed(2)}%`} />
-          <Stat label={t("result.time")} value={`${Math.round(result.duration)}s`} title={`${result.duration.toFixed(2)}s · afk ${result.afkSeconds}s`} />
+          <Stat label={t("result.consistency")} value={num(result.consistency, "%", 200)} title={`${result.consistency.toFixed(2)}%`} delay={270} />
+          <Stat label={t("result.time")} value={`${Math.round(result.duration)}s`} title={`${result.duration.toFixed(2)}s · afk ${result.afkSeconds}s`} delay={300} />
           {spec.quote ? (
             <div className="min-w-0 max-w-sm">
               <div className="text-sm leading-tight text-sub">{t("result.source")}</div>
@@ -162,6 +184,12 @@ export function ResultView({
         ) : null}
       </div>
 
+      {!failed ? (
+        <div className="mx-auto mt-8 max-w-xl">
+          <XpPanel award={xp} pending={saveState === "saving"} guestXp={signedIn ? null : guestXp} effects={effects} />
+        </div>
+      ) : null}
+
       <div className="mt-8 flex items-center justify-center gap-2">
         <IconButton label={t("result.next")} onClick={onNext}>
           <ChevronRightIcon size={22} />
@@ -178,7 +206,7 @@ export function ResultView({
       </div>
 
       <div className="mt-6 min-h-6 text-center text-sm">
-        {!signedIn && !failed ? (
+        {!signedIn && !failed && guestXp ? null : !signedIn && !failed ? (
           <Link href="/login" className="text-sub underline decoration-sub/50 underline-offset-4 hover:text-text">
             {t("result.signIn")}
           </Link>
@@ -187,7 +215,7 @@ export function ResultView({
         )}
       </div>
       {toast ? (
-        <div className="fade-in fixed bottom-8 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-sub-alt px-4 py-2.5 text-sm text-text shadow-lg">{toast}</div>
+        <div className="toast fixed bottom-8 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-sub-alt px-4 py-2.5 text-sm text-text shadow-lg">{toast}</div>
       ) : null}
     </div>
   );

@@ -2,7 +2,13 @@
  * Race websocket protocol (compact JSON). Shared by server and client.
  *
  * Progress snapshots are flat arrays to keep 200-player rooms small:
- *   p = [pid, correctChars, wpm, place, pid, correctChars, wpm, place, ...]
+ *   p = [pid, correctChars, words, wpm, place, finishDs, pid, ...]   (stride P_STRIDE)
+ *
+ * Every snapshot ("tick") carries a per-room sequence number `s`; clients
+ * discard snapshots whose sequence is not newer than the last one applied.
+ * Progress (chars/words) is monotonic per player within a round — the server
+ * never broadcasts a lower value. A new round (`RoomInfo.rnd`) is the only
+ * authoritative reset.
  */
 
 export type RoomState = "waiting" | "countdown" | "racing" | "finished";
@@ -19,8 +25,11 @@ export const COUNTDOWN_MS = 3000;
 export const PUBLIC_AUTOSTART_MS = 12000;
 export const MAX_MESSAGE_BYTES = 4096;
 
-/** [pid, name, isUser(0/1), connected(0/1), correctChars, wpm, place, acc] */
-export type PlayerTuple = [number, string, 0 | 1, 0 | 1, number, number, number, number];
+/** fields per player in a tick's flat `p` array: pid, chars, words, wpm, place, finishDs */
+export const P_STRIDE = 6;
+
+/** [pid, name, isUser(0/1), connected(0/1), correctChars, wpm, place, acc, words, finishDs (finish time in 1/10 s, 0 = racing)] */
+export type PlayerTuple = [number, string, 0 | 1, 0 | 1, number, number, number, number, number, number];
 
 export interface RoomInfo {
   code: string;
@@ -37,6 +46,12 @@ export interface RoomInfo {
   startAt: number | null;
   autoAt: number | null;
   players: PlayerTuple[];
+  /** number of words in `text` */
+  wc: number;
+  /** round counter, increments on every rematch (new text => authoritative progress reset) */
+  rnd: number;
+  /** sequence number of the last snapshot broadcast before this full state */
+  seq: number;
 }
 
 /** [code, lang, textType, len, players, max, state] */
@@ -65,6 +80,8 @@ export type ServerMsg =
   | {
       t: "tick";
       now: number;
+      /** per-room snapshot sequence number (strictly increasing) */
+      s: number;
       st?: RoomState;
       at?: number | null;
       auto?: number | null;
@@ -75,6 +92,8 @@ export type ServerMsg =
       p?: number[];
     }
   | { t: "end"; results: ResultTuple[] }
+  /** race XP for a signed-in finisher (sent after the race was saved) */
+  | { t: "xp"; code: string; gained: number; level: number; prevLevel: number }
   | { t: "left" }
   | { t: "err"; code: string }
   | { t: "pong"; c: number; s: number };

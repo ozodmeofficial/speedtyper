@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useT } from "@/components/providers/I18nProvider";
 import { api } from "@/lib/client/api";
 import type { DictKey } from "@/lib/i18n";
-import { LockIcon, UserIcon } from "@/components/ui/icons";
+import { CrownIcon, LockIcon, TrophyIcon, UserIcon } from "@/components/ui/icons";
+import { LevelBadge } from "@/components/xp/Badges";
 
 type Err = { key: DictKey; vars?: Record<string, string | number> } | null;
 
@@ -77,10 +78,13 @@ export function AuthForms() {
   };
 
   return (
-    <div className="mx-auto grid w-full max-w-3xl flex-1 content-center gap-14 py-12 md:grid-cols-2">
-      <form onSubmit={onRegister} className="flex flex-col gap-3" noValidate>
-        <h1 className="mb-2 flex items-center gap-2 text-sub">
-          <UserIcon size={17} /> {t("auth.registerTitle")}
+    <div className="mx-auto grid w-full max-w-4xl flex-1 content-center items-start gap-6 py-12 md:grid-cols-2 md:gap-8">
+      <form onSubmit={onRegister} className="card fade-in flex flex-col gap-3 p-6 sm:p-8" noValidate>
+        <h1 className="mb-2 flex items-center gap-2.5 text-lg text-text">
+          <span className="grid h-8 w-8 place-items-center rounded-full bg-bg text-main">
+            <UserIcon size={16} />
+          </span>
+          {t("auth.registerTitle")}
         </h1>
         <Field name="username" label={t("auth.username")} hint={t("auth.usernameHint")} autoComplete="username" maxLength={20} required />
         <Field name="email" type="email" label={t("auth.email")} autoComplete="email" maxLength={254} />
@@ -90,14 +94,38 @@ export function AuthForms() {
           {regErr ? t(regErr.key, regErr.vars) : ""}
         </p>
         <button type="submit" className="btn btn-primary w-full" disabled={busy !== null}>
+          {busy === "reg" ? <Spinner /> : null}
           {t("auth.submitRegister")}
         </button>
-        <p className="text-xs leading-relaxed text-sub">{t("auth.why")}</p>
+        <div className="mt-3 border-t-4 border-bg pt-4">
+          <p className="mb-2.5 text-xs text-sub">{t("auth.perksTitle")}</p>
+          <ul className="flex flex-col gap-2 text-sm text-text">
+            <li className="flex items-center gap-2.5">
+              <LevelBadge level={7} size="xs" />
+              {t("auth.perkXp")}
+            </li>
+            <li className="flex items-center gap-2.5">
+              <span className="grid w-[1.15rem] place-items-center text-main">
+                <CrownIcon size={14} />
+              </span>
+              {t("auth.perkPb")}
+            </li>
+            <li className="flex items-center gap-2.5">
+              <span className="grid w-[1.15rem] place-items-center text-main">
+                <TrophyIcon size={14} />
+              </span>
+              {t("auth.perkLb")}
+            </li>
+          </ul>
+        </div>
       </form>
 
-      <form onSubmit={onLogin} className="flex flex-col gap-3" noValidate>
-        <h2 className="mb-2 flex items-center gap-2 text-sub">
-          <LockIcon size={17} /> {t("auth.loginTitle")}
+      <form onSubmit={onLogin} className="card fade-in flex flex-col gap-3 p-6 sm:p-8" noValidate>
+        <h2 className="mb-2 flex items-center gap-2.5 text-lg text-text">
+          <span className="grid h-8 w-8 place-items-center rounded-full bg-bg text-main">
+            <LockIcon size={16} />
+          </span>
+          {t("auth.loginTitle")}
         </h2>
         <Field name="username" label={t("auth.username")} autoComplete="username" maxLength={254} required />
         <Field name="password" type="password" label={t("auth.password")} autoComplete="current-password" maxLength={128} required />
@@ -105,9 +133,15 @@ export function AuthForms() {
           {logErr ? t(logErr.key, logErr.vars) : ""}
         </p>
         <button type="submit" className="btn btn-primary w-full" disabled={busy !== null}>
+          {busy === "log" ? <Spinner /> : null}
           {t("auth.submitLogin")}
         </button>
+        <p className="mt-1 text-xs leading-relaxed text-sub">{t("auth.why")}</p>
       </form>
     </div>
   );
+}
+
+function Spinner() {
+  return <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" />;
 }

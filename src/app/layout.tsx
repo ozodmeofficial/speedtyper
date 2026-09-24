@@ -3,6 +3,8 @@ import "./globals.css";
 import { fontVariables } from "./fonts";
 import { getRequestContext } from "@/server/context";
 import { prisma } from "@/server/db";
+import { getProgress } from "@/server/xp";
+import type { UserProgress } from "@/lib/xp";
 import { activeColors, fontVar } from "@/lib/settings";
 import { THEMES, themeStyle, COLOR_KEYS, THEME_VARS } from "@/lib/themes";
 import { I18nProvider } from "@/components/providers/I18nProvider";
@@ -61,9 +63,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   } as React.CSSProperties;
 
   let serverSettings: { settings: unknown; at: number } | null = null;
+  let progress: UserProgress | null = null;
   if (user) {
-    const row = await prisma.user.findUnique({ where: { id: user.id }, select: { settings: true, settingsAt: true } });
+    const [row, p] = await Promise.all([
+      prisma.user.findUnique({ where: { id: user.id }, select: { settings: true, settingsAt: true } }),
+      getProgress(user.id).catch(() => null),
+    ]);
     if (row?.settings && row.settingsAt) serverSettings = { settings: row.settings, at: row.settingsAt.getTime() };
+    progress = p;
   }
 
   return (
@@ -78,6 +85,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <I18nProvider lang={lang} dict={dict}>
           <AppProvider
             user={user ? { id: user.id, username: user.username } : null}
+            initialProgress={progress}
             initialSettings={settings}
             serverSettings={serverSettings}
           >

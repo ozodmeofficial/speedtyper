@@ -61,6 +61,8 @@ export interface Settings {
   minWpm: number;
   minAcc: number;
   showKeyTips: boolean;
+  /** caret glow, word flash, combo counter, result animations, confetti */
+  effects: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -91,6 +93,7 @@ export const DEFAULT_SETTINGS: Settings = {
   minWpm: 0,
   minAcc: 0,
   showKeyTips: true,
+  effects: true,
 };
 
 const oneOf = <T,>(v: unknown, list: readonly T[], d: T): T => (list.includes(v as T) ? (v as T) : d);
@@ -130,6 +133,7 @@ export function sanitizeSettings(input: unknown): Settings {
     minWpm: num(s.minWpm, 0, 300, d.minWpm),
     minAcc: num(s.minAcc, 0, 100, d.minAcc),
     showKeyTips: bool(s.showKeyTips, d.showKeyTips),
+    effects: bool(s.effects, d.effects),
   };
 }
 

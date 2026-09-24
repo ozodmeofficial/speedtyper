@@ -24,7 +24,7 @@ import { playKey } from "@/lib/client/sound";
 
 function Row({ title, desc, children, wide }: { title: string; desc?: string; children: React.ReactNode; wide?: boolean }) {
   return (
-    <div className={`grid gap-3 py-4 ${wide ? "" : "md:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] md:gap-8"}`}>
+    <div className={`-mx-3 grid gap-3 rounded-lg px-3 py-4 transition-colors hover:bg-sub-alt/25 ${wide ? "" : "md:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] md:gap-8"}`}>
       <div>
         <h3 className="text-text">{title}</h3>
         {desc ? <p className="mt-1 text-sm leading-relaxed text-sub">{desc}</p> : null}
@@ -44,7 +44,7 @@ function Opt({ active, onClick, children, style }: { active: boolean; onClick: (
 
 function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
-    <section id={id} className="scroll-mt-6">
+    <section id={id} className="scroll-mt-16">
       <h2 className="mt-10 mb-1 flex items-center gap-3 text-xl text-sub">
         <span>{title}</span>
         <span className="h-[3px] flex-1 rounded-full bg-sub-alt" aria-hidden="true" />
@@ -90,9 +90,9 @@ export function SettingsPanel() {
     <div className="mx-auto w-full py-8">
       <h1 className="text-3xl text-text">{t("settings.title")}</h1>
       <p className="mt-2 text-sm text-sub">{t("settings.syncNote")}</p>
-      <nav className="mt-6 flex flex-wrap gap-2" aria-label="sections">
+      <nav className="sticky top-0 z-10 -mx-2 mt-6 flex gap-1 overflow-x-auto bg-bg/90 px-2 py-2 backdrop-blur [scrollbar-width:none]" aria-label="sections">
         {sections.map(([id, label]) => (
-          <a key={id} href={`#${id}`} className="btn px-3 py-1.5 text-sm">
+          <a key={id} href={`#${id}`} className="rounded-md px-3 py-1.5 text-sm whitespace-nowrap text-sub transition-colors hover:bg-sub-alt hover:text-text">
             {label}
           </a>
         ))}
@@ -204,6 +204,9 @@ export function SettingsPanel() {
       </Section>
 
       <Section id="appearance" title={t("settings.sectionAppearance")}>
+        <Row title={t("settings.effects")} desc={t("settings.effectsDesc")}>
+          {onOff("effects")}
+        </Row>
         <Row title={t("settings.liveWpm")} desc={t("settings.liveWpmDesc")}>
           {onOff("liveWpm")}
         </Row>

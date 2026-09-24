@@ -1,10 +1,15 @@
 import { prisma } from "../db";
+import { awardRaceXp, type XpAward } from "../xp";
 import type { RaceSummary } from "./room";
 
-/** Persist a finished race (only when at least one signed-in player took part). */
-export async function saveRace(s: RaceSummary): Promise<void> {
+/**
+ * Persist a finished race (only when at least one signed-in player took part),
+ * then award race XP to every signed-in finisher. Returns the awards by user id.
+ */
+export async function saveRace(s: RaceSummary): Promise<Map<string, XpAward>> {
+  const awards = new Map<string, XpAward>();
   const users = s.players.filter((p) => p.userId);
-  if (users.length === 0) return;
+  if (users.length === 0) return awards;
   const race = await prisma.race.create({
     data: {
       code: s.code,
@@ -41,4 +46,16 @@ export async function saveRace(s: RaceSummary): Promise<void> {
       }),
     ),
   );
+  // XP after the race counters are written (the "race wins" achievement reads them).
+  // Sequential on purpose: up to 200 players, don't flood the connection pool.
+  for (const p of users) {
+    if (!p.finished || p.duration === null) continue;
+    const award = await awardRaceXp(
+      p.userId!,
+      { place: p.place, players: s.players.length, wpm: p.wpm, acc: p.acc, durationMs: p.duration * 1000 },
+      race.id,
+    );
+    if (award) awards.set(p.userId!, award);
+  }
+  return awards;
 }
