@@ -40,6 +40,8 @@ services:
       - traefik.http.routers.speedtyper.entrypoints=websecure
       - traefik.http.routers.speedtyper.tls=true
       - traefik.http.routers.speedtyper.tls.certresolver=${TLS_CERT_RESOLVER:-letsencrypt}
+      # Certificate only for the apex until www has a DNS record (add sans=www.speedtyper.uz then)
+      - traefik.http.routers.speedtyper.tls.domains[0].main=speedtyper.uz
       - traefik.http.routers.speedtyper.middlewares=speedtyper-www
       - traefik.http.middlewares.speedtyper-www.redirectregex.regex=^https?://www\.speedtyper\.uz/(.*)
       - traefik.http.middlewares.speedtyper-www.redirectregex.replacement=https://speedtyper.uz/$${1}
