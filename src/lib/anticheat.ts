@@ -168,11 +168,11 @@ export function validateResult(input: unknown): ValidationResult {
 /** Leaderboard key for a result, or null when the result does not qualify. */
 export function boardFor(r: Pick<ResultPayload, "mode" | "mode2" | "language" | "punctuation" | "numbers">): string | null {
   if (r.mode !== "time" || r.punctuation || r.numbers) return null;
-  if (r.mode2 !== "15" && r.mode2 !== "60") return null;
+  if (!(BOARD_TIMES as readonly string[]).includes(r.mode2)) return null;
   const lang = r.language === "english_1k" ? null : r.language;
   if (!lang) return null;
   return `time_${r.mode2}_${lang}`;
 }
 
 export const BOARD_LANGS = ["english", "uzbek", "russian"] as const;
-export const BOARD_TIMES = ["15", "60"] as const;
+export const BOARD_TIMES = ["15", "30", "60", "120"] as const;

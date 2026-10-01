@@ -61,6 +61,7 @@ export function ResultView({
   const failed = result.failed || result.invalid;
   const c = result.counts;
   const correct = c.correctChars + c.correctSpaces;
+  const cpm = result.duration > 0 ? (correct * 60) / result.duration : 0;
   const num = (v: number, suffix = "", delay = 0) => (
     <AnimatedNumber value={Math.round(v)} from={effects ? 0 : Math.round(v)} animate={effects} duration={800} delay={delay} suffix={suffix} />
   );
@@ -151,6 +152,7 @@ export function ResultView({
               {spec.numbers ? <><br />{t("config.numbers")}</> : null}
             </div>
           </div>
+          <Stat label="cpm" value={num(cpm, "", 150)} title={t("result.cpmTip")} delay={200} />
           <Stat label={t("result.raw")} value={num(result.raw, "", 150)} title={`${result.raw.toFixed(2)}`} delay={210} />
           <Stat
             label={t("result.characters")}

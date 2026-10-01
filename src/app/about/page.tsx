@@ -23,7 +23,7 @@ export default async function AboutPage() {
   );
   return (
     <article className="mx-auto w-full max-w-3xl py-10">
-      <h1 className="text-3xl text-text">{t("about.title")}</h1>
+      <h1 className="text-4xl text-text">{t("about.title")}</h1>
       <p className="mt-6 text-lg leading-relaxed text-text">{t("about.p1")}</p>
       <p className="mt-4 leading-relaxed text-sub">{t("about.p2")}</p>
       <Block title={t("about.statsTitle")} text={t("about.stats")} />

@@ -153,12 +153,29 @@ export const EyeIcon = (p: P) => (
     <circle cx="12" cy="12" r="3" />
   </Icon>
 );
+export const SunIcon = (p: P) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+  </Icon>
+);
+export const MoonIcon = (p: P) => (
+  <Icon {...p}>
+    <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11Z" />
+  </Icon>
+);
+export const CalendarIcon = (p: P) => (
+  <Icon {...p}>
+    <rect x="3" y="4.5" width="18" height="16" rx="2.5" />
+    <path d="M3 9.5h18M8 2.5v4M16 2.5v4" />
+  </Icon>
+);
 
 /** Brand mark: a key cap with a prompt caret. */
 export function LogoMark({ size = 28, className }: { size?: number; className?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" className={className}>
-      <rect x="1.5" y="1.5" width="29" height="29" rx="8" fill="var(--main)" />
+      <rect x="1.5" y="1.5" width="29" height="29" rx="9.5" fill="var(--main)" />
       <path d="m9 10.5 6 5.5-6 5.5" fill="none" stroke="var(--bg)" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M17.5 22h6" stroke="var(--bg)" strokeWidth="3.2" strokeLinecap="round" />
     </svg>

@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
   activeColors,
+  colorSchemeOf,
   encodeSettingsCookie,
   fontVar,
   sanitizeSettings,
@@ -43,6 +44,7 @@ export function applyToDocument(s: Settings, preview?: ThemeColors | null) {
   for (const k of COLOR_KEYS) d.style.setProperty(THEME_VARS[k], c[k]);
   d.style.setProperty("--typing-font", fontVar(s.fontFamily));
   d.style.setProperty("--font-size", `${s.fontSize}rem`);
+  d.style.colorScheme = preview ? colorSchemeOf({ ...s, useCustomTheme: true, customTheme: preview }) : colorSchemeOf(s);
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute("content", c.bg);
 }

@@ -220,13 +220,13 @@
   background: var(--rc-medal);
 }
 .rc-lane.rc-top1 {
-  --rc-medal: #e2b714;
+  --rc-medal: #d4a017;
 }
 .rc-lane.rc-top2 {
-  --rc-medal: #b8c0cc;
+  --rc-medal: #a8b0bc;
 }
 .rc-lane.rc-top3 {
-  --rc-medal: #cd7f32;
+  --rc-medal: #c07a3a;
 }
 .rc-jump {
   transition:
@@ -439,16 +439,16 @@
 }
 .rc-step-1 .rc-block {
   height: 6rem;
-  background: color-mix(in srgb, #e2b714 22%, var(--sub-alt));
-  color: #e2b714;
+  background: color-mix(in srgb, #d4a017 22%, var(--sub-alt));
+  color: #d4a017;
 }
 .rc-step-2 .rc-block {
   height: 4.5rem;
-  background: color-mix(in srgb, #b8c0cc 16%, var(--sub-alt));
+  background: color-mix(in srgb, #a8b0bc 16%, var(--sub-alt));
 }
 .rc-step-3 .rc-block {
   height: 3.25rem;
-  background: color-mix(in srgb, #cd7f32 16%, var(--sub-alt));
+  background: color-mix(in srgb, #c07a3a 16%, var(--sub-alt));
 }
 .rc-step-me .rc-block {
   box-shadow: inset 0 0 0 2px var(--main);

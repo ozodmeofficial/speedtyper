@@ -21,7 +21,7 @@ function Item({ active, onClick, children, title }: { active?: boolean; onClick:
   );
 }
 
-const Spacer = () => <span className="mx-1.5 h-5 w-[3px] shrink-0 rounded-full bg-bg" aria-hidden="true" />;
+const Spacer = () => <span className="mx-1.5 h-5 w-px shrink-0 bg-line" aria-hidden="true" />;
 
 export function ConfigBar({
   settings,
@@ -37,7 +37,7 @@ export function ConfigBar({
   const canPunct = settings.mode === "time" || settings.mode === "words";
 
   return (
-    <div className="mx-auto flex w-fit max-w-full items-center overflow-x-auto rounded-lg bg-sub-alt px-1.5 text-[0.78rem] leading-none [scrollbar-width:none] sm:px-2.5">
+    <div className="mx-auto flex w-fit max-w-full items-center overflow-x-auto rounded-xl bg-surface px-1.5 text-[0.8rem] leading-none shadow-[inset_0_0_0_1px_var(--border)] [scrollbar-width:none] sm:px-2.5">
       {canPunct ? (
         <span className="hidden items-center sm:flex">
           <Item active={settings.punctuation} onClick={() => update({ punctuation: !settings.punctuation })}>

@@ -4,7 +4,7 @@ import { csrfError, csrfOk, json, routeSession, withSession } from "@/server/aut
 import { boardFor, validateResult } from "@/lib/anticheat";
 import { limiter } from "@/server/ratelimit";
 import { readJson } from "@/server/body";
-import { recordBest } from "@/server/leaderboard";
+import { invalidateSpeed } from "@/server/leaderboard";
 import { dayKey, dayKeyToUtcMidnight } from "@/lib/format";
 import { awardTestXp } from "@/server/xp";
 
@@ -67,8 +67,7 @@ export async function POST(req: NextRequest) {
     }),
   ]);
 
-  const board = boardFor(r);
-  if (board && !check.flagged) await recordBest(board, userId, saved.id, r, now);
+  if (boardFor(r) && !check.flagged) invalidateSpeed(r.mode2, r.language);
   let xp = null;
   if (!check.flagged) {
     try {

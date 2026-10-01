@@ -6,10 +6,10 @@
 - Rejimlar: **vaqt** (15/30/60/120), **so‘zlar** (10/25/50/100), **iqtibos**, **zen**, **maxsus matn**; tinish belgilari va raqamlar.
 - Tillar: English (200 / 1k), O‘zbekcha (lotin, `o‘ g‘` va tutuq belgisi to‘g‘ri), Русский. Klaviaturadagi `'` avtomatik `‘`/`’` sifatida qabul qilinadi.
 - Natija ekrani: wpm, aniqlik, xom tezlik, belgilar (to‘g‘ri/noto‘g‘ri/ortiqcha/tushib qolgan), barqarorlik, soniyama-soniya grafik va xatolar, shaxsiy rekord, xato so‘zlarni mashq qilish, rasmga olish.
-- 30 ta mavzu (yorug‘ va qorong‘i), shaxsiy mavzu muharriri, 10 ta shrift, kursor uslublari, silliq kursor, lenta rejimi, ko‘r/erkin/ishonch rejimlari, minimal tezlik/aniqlik, bosish ovozlari.
+- Claude uslubidagi dizayn (iliq qog‘oz rang, terrakota urg‘u, serif sarlavhalar), yorug‘/qorong‘i almashtirgich; jami 32 ta mavzu (yorug‘ va qorong‘i), shaxsiy mavzu muharriri, 10 ta shrift, kursor uslublari, silliq kursor, lenta rejimi, ko‘r/erkin/ishonch rejimlari, minimal tezlik/aniqlik, bosish ovozlari.
 - Buyruqlar paneli: `esc` yoki `ctrl+shift+p` — barcha sozlamalar, mavzular, shriftlar bo‘yicha qidiruv.
 - Hisoblar (login + parol, argon2id), profil (`/u/<nom>`): rekordlar, faollik xaritasi, tezlik tarixi, natijalar, poygalar.
-- Reyting: vaqt 15 / vaqt 60 × english / o‘zbekcha / русский, barcha vaqt va kunlik (Toshkent vaqti), poyga reytingi.
+- Reyting: **WPM** yoki **CPM** (daqiqasiga to‘g‘ri belgilar) bo‘yicha — **bugun / bu oy / bu yil / butun umr** (Toshkent vaqti), vaqt 15 / 30 / 60 / 120 × english / o‘zbekcha / русский; XP reytingi (umumiy, haftalik); poyga reytingi davrlar bo‘yicha.
 - Poygalar (`/race`): tezkor poyga, ochiq/yopiq xona, taklif havolasi, kod bo‘yicha qo‘shilish, 3‑2‑1 sanoq, jonli progress, 1/2/3 o‘rin medallari, tomosha rejimi, qayta ulanish.
 - Interfeys tillari: O‘zbekcha (standart), English, Русский.
 

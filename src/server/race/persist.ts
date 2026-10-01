@@ -57,5 +57,8 @@ export async function saveRace(s: RaceSummary): Promise<Map<string, XpAward>> {
     );
     if (award) awards.set(p.userId!, award);
   }
+  // drop cached race leaderboards (process-wide cache, see server/leaderboard.ts)
+  const cache = (globalThis as unknown as { __stLbCache?: Map<string, unknown> }).__stLbCache;
+  if (cache) for (const k of cache.keys()) if (k.startsWith("race:")) cache.delete(k);
   return awards;
 }

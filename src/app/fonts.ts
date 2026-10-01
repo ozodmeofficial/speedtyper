@@ -9,6 +9,7 @@ import {
   Lexend_Deca,
   Nunito,
   Montserrat,
+  Source_Serif_4,
 } from "next/font/google";
 
 // All fonts are downloaded at build time and self-hosted by next/font.
@@ -23,7 +24,10 @@ export const lexendDeca = Lexend_Deca({ subsets: ["latin"], variable: "--font-le
 export const nunito = Nunito({ subsets: ["latin", "cyrillic"], variable: "--font-nunito", display: "swap", preload: false });
 export const montserrat = Montserrat({ subsets: ["latin", "cyrillic"], variable: "--font-montserrat", display: "swap", preload: false });
 
+export const sourceSerif = Source_Serif_4({ subsets: ["latin", "cyrillic"], variable: "--font-source-serif", display: "swap" });
+
 export const fontVariables = [
+  sourceSerif,
   inter,
   robotoMono,
   jetbrainsMono,

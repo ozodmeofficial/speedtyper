@@ -12,7 +12,7 @@ import { languageInfo } from "@/lib/typing/words";
 import type { RacePlayer, RoomView } from "./useRace";
 import type { DictKey } from "@/lib/i18n";
 
-const MEDAL = ["#e2b714", "#b8c0cc", "#cd7f32"];
+const MEDAL = ["#d4a017", "#a8b0bc", "#c07a3a"];
 /** rooms with more players than this use the virtualized list */
 const BIG_ROOM = 12;
 /** at most one re-rank (and list reorder) per interval */
@@ -635,6 +635,7 @@ export function RoomScreen({ room, send, status, smoother }: { room: RoomView; s
   const countdown = room.state === "countdown" && room.startAt ? Math.max(0, Math.ceil((room.startAt - now) / 1000)) : null;
   const autoIn = room.state === "waiting" && room.autoAt ? Math.max(0, Math.ceil((room.autoAt - now) / 1000)) : null;
 
+
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(inviteUrl);
@@ -810,6 +811,7 @@ export function RoomScreen({ room, send, status, smoother }: { room: RoomView; s
                   <th className="w-14">{t("table.place")}</th>
                   <th>{t("table.name")}</th>
                   <th className="num">{t("table.wpm")}</th>
+                  <th className="num hidden sm:table-cell">cpm</th>
                   <th className="num">{t("table.acc")}</th>
                   <th className="num">{t("result.time")}</th>
                 </tr>
@@ -820,6 +822,7 @@ export function RoomScreen({ room, send, status, smoother }: { room: RoomView; s
                     <td>{r.place ? <Medal place={r.place} /> : <span className="text-xs text-sub">{t("race.dnf")}</span>}</td>
                     <td className="truncate">{r.p.name}</td>
                     <td className="num">{r.place ? r.wpm.toFixed(1) : "-"}</td>
+                    <td className="num hidden sm:table-cell">{r.place ? (r.wpm * 5).toFixed(0) : "-"}</td>
                     <td className="num">{r.place ? `${r.acc.toFixed(1)}%` : "-"}</td>
                     <td className="num">{r.place ? `${r.dur.toFixed(1)}s` : "-"}</td>
                   </tr>

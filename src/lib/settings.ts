@@ -13,6 +13,7 @@ export const FONTS = [
   { id: "lexend_deca", label: "Lexend Deca" },
   { id: "nunito", label: "Nunito" },
   { id: "montserrat", label: "Montserrat" },
+  { id: "source_serif", label: "Source Serif" },
 ] as const;
 export type FontId = (typeof FONTS)[number]["id"];
 export const fontVar = (id: FontId) => `var(--font-${id.replace(/_/g, "-")})`;
@@ -63,7 +64,12 @@ export interface Settings {
   showKeyTips: boolean;
   /** caret glow, word flash, combo counter, result animations, confetti */
   effects: boolean;
+  /** settings schema version (see sanitizeSettings) */
+  v: number;
 }
+
+/** v2: the default theme changed from "graphite" to "claude" */
+export const SETTINGS_VERSION = 2;
 
 export const DEFAULT_SETTINGS: Settings = {
   mode: "time",
@@ -94,6 +100,7 @@ export const DEFAULT_SETTINGS: Settings = {
   minAcc: 0,
   showKeyTips: true,
   effects: true,
+  v: SETTINGS_VERSION,
 };
 
 const oneOf = <T,>(v: unknown, list: readonly T[], d: T): T => (list.includes(v as T) ? (v as T) : d);
@@ -105,6 +112,8 @@ const num = (v: unknown, min: number, max: number, d: number) =>
 export function sanitizeSettings(input: unknown): Settings {
   const s = (input && typeof input === "object" ? input : {}) as Record<string, unknown>;
   const d = DEFAULT_SETTINGS;
+  // settings saved before v2 still carry the old default theme: move them to the new one once
+  const legacyDefault = s.v !== SETTINGS_VERSION && (s.theme === "graphite" || s.theme === undefined);
   return {
     mode: oneOf(s.mode, MODES, d.mode),
     time: num(s.time, 1, 3600, d.time),
@@ -113,7 +122,7 @@ export function sanitizeSettings(input: unknown): Settings {
     punctuation: bool(s.punctuation, d.punctuation),
     numbers: bool(s.numbers, d.numbers),
     language: isLanguage(s.language) ? s.language : d.language,
-    theme: THEMES.some((x) => x.id === s.theme) ? (s.theme as string) : d.theme,
+    theme: !legacyDefault && THEMES.some((x) => x.id === s.theme) ? (s.theme as string) : d.theme,
     customTheme: sanitizeColors(s.customTheme),
     useCustomTheme: bool(s.useCustomTheme, d.useCustomTheme),
     fontFamily: oneOf(s.fontFamily, FONTS.map((f) => f.id), d.fontFamily),
@@ -134,6 +143,7 @@ export function sanitizeSettings(input: unknown): Settings {
     minAcc: num(s.minAcc, 0, 100, d.minAcc),
     showKeyTips: bool(s.showKeyTips, d.showKeyTips),
     effects: bool(s.effects, d.effects),
+    v: SETTINGS_VERSION,
   };
 }
 
@@ -143,7 +153,8 @@ export const CUSTOM_TEXT_STORAGE = "st_custom_text";
 
 /** Only non-default values are stored in the cookie to keep it small. */
 export function encodeSettingsCookie(s: Settings): string {
-  const diff: Record<string, unknown> = {};
+  // the version is always kept so an explicit "graphite" is not migrated again
+  const diff: Record<string, unknown> = { v: s.v };
   for (const k of Object.keys(s) as (keyof Settings)[]) {
     if (JSON.stringify(s[k]) !== JSON.stringify(DEFAULT_SETTINGS[k])) diff[k] = s[k];
   }
@@ -157,6 +168,16 @@ export function decodeSettingsCookie(v: string | undefined | null): Settings {
   } catch {
     return DEFAULT_SETTINGS;
   }
+}
+
+/** "light" | "dark" for native controls and scrollbars (custom themes: by background luminance) */
+export function colorSchemeOf(s: Settings): "light" | "dark" {
+  if (s.useCustomTheme && s.customTheme) {
+    const n = parseInt(s.customTheme.bg.slice(1), 16);
+    const lum = 0.2126 * ((n >> 16) & 255) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255);
+    return lum > 140 ? "light" : "dark";
+  }
+  return getTheme(s.theme).light ? "light" : "dark";
 }
 
 export function activeColors(s: Settings): ThemeColors {

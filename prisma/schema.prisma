@@ -34,7 +34,6 @@ model User {
 
   sessions     Session[]
   results      Result[]
-  bests        LeaderboardBest[]
   raceResults  RaceResult[]
   xpEvents     XpEvent[]
   achievements UserAchievement[]
@@ -91,25 +90,9 @@ model Result {
   @@index([userId, createdAt(sort: Desc)])
   @@index([userId, mode, mode2, language, punctuation, numbers, wpm(sort: Desc)])
   @@index([dayKey, mode, mode2, language, wpm(sort: Desc)])
+  /// speed leaderboards (month / year / all-time ranges over day_key)
+  @@index([mode, mode2, language, dayKey])
   @@map("results")
-}
-
-/// Best result per user per leaderboard (time 15 / time 60 per language).
-model LeaderboardBest {
-  id          String   @id @default(cuid())
-  board       String   @db.VarChar(40)
-  userId      String   @map("user_id")
-  resultId    String   @map("result_id")
-  wpm         Float
-  raw         Float
-  acc         Float
-  consistency Float
-  achievedAt  DateTime @map("achieved_at")
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([board, userId])
-  @@index([board, wpm(sort: Desc), achievedAt])
-  @@map("leaderboard_bests")
 }
 
 model Race {

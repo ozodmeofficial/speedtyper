@@ -86,7 +86,8 @@ describe("validateResult", () => {
 describe("boardFor", () => {
   it("maps qualifying results to boards", () => {
     expect(boardFor({ mode: "time", mode2: "60", language: "uzbek", punctuation: false, numbers: false })).toBe("time_60_uzbek");
-    expect(boardFor({ mode: "time", mode2: "30", language: "uzbek", punctuation: false, numbers: false })).toBeNull();
+    expect(boardFor({ mode: "time", mode2: "30", language: "uzbek", punctuation: false, numbers: false })).toBe("time_30_uzbek");
+    expect(boardFor({ mode: "time", mode2: "45", language: "uzbek", punctuation: false, numbers: false })).toBeNull();
     expect(boardFor({ mode: "time", mode2: "15", language: "english", punctuation: true, numbers: false })).toBeNull();
     expect(boardFor({ mode: "words", mode2: "25", language: "english", punctuation: false, numbers: false })).toBeNull();
   });

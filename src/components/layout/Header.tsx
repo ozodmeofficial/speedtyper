@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useApp } from "@/components/providers/AppProvider";
 import { useT } from "@/components/providers/I18nProvider";
-import { FlagIcon, GearIcon, InfoIcon, KeyboardIcon, LogoMark, TrophyIcon, UserIcon } from "@/components/ui/icons";
+import { FlagIcon, GearIcon, InfoIcon, KeyboardIcon, LogoMark, MoonIcon, SunIcon, TrophyIcon, UserIcon } from "@/components/ui/icons";
+import { getTheme, toggledTheme } from "@/lib/themes";
 import type { DictKey } from "@/lib/i18n";
 import { levelProgress, tierForLevel } from "@/lib/xp";
 import { fmtInt } from "@/lib/format";
@@ -21,49 +22,73 @@ const NAV: { href: string; key: DictKey; Icon: typeof KeyboardIcon }[] = [
 
 export function Header() {
   const t = useT();
-  const { user, progress, settings } = useApp();
+  const { user, progress, settings, update } = useApp();
+  const isLight = settings.useCustomTheme && settings.customTheme ? false : getTheme(settings.theme).light;
   const path = usePathname();
   const isActive = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
   const accountHref = user ? `/u/${user.username}` : "/login";
 
   return (
-    <header className="page chrome flex h-[5.5rem] shrink-0 items-center gap-6 pt-4 sm:gap-8">
-      <Link href="/" className="group flex items-center gap-2.5" aria-label="SpeedTyper">
-        <LogoMark size={30} />
-        <span className="hidden text-[1.7rem] leading-none font-bold tracking-[-0.04em] text-text min-[420px]:inline">
-          <span className="text-sub transition-colors group-hover:text-text">speed</span>typer
+    <header className="page chrome flex h-[5rem] shrink-0 items-center gap-4 pt-3 sm:gap-6">
+      <Link href="/" className="group flex shrink-0 items-center gap-2.5" aria-label="SpeedTyper">
+        <LogoMark size={30} className="transition-transform duration-200 group-hover:-rotate-6" />
+        <span className="display hidden text-[1.6rem] leading-none text-text min-[420px]:inline">
+          Speed<span className="text-main">Typer</span>
         </span>
       </Link>
-      <nav className="flex items-center gap-1 sm:gap-2" aria-label="main">
-        {NAV.map(({ href, key, Icon }) => (
-          <Link
-            key={href}
-            href={href}
-            title={t(key)}
-            aria-label={t(key)}
-            aria-current={isActive(href) ? "page" : undefined}
-            className={`text-btn grid h-9 w-9 place-items-center ${isActive(href) && href !== "/" ? "!text-text" : ""}`}
-          >
-            <Icon size={19} />
-          </Link>
-        ))}
+      <nav className="flex min-w-0 items-center gap-0.5 overflow-x-auto [scrollbar-width:none]" aria-label="main">
+        {NAV.map(({ href, key, Icon }) => {
+          const active = isActive(href);
+          return (
+            <Link
+              key={href}
+              href={href}
+              title={t(key)}
+              aria-label={t(key)}
+              aria-current={active ? "page" : undefined}
+              className={`flex h-9 shrink-0 items-center gap-2 rounded-lg px-2.5 text-sm transition-colors ${
+                active ? "bg-sub-alt text-text shadow-[inset_0_0_0_1px_var(--border)]" : "text-sub hover:bg-[var(--hover)] hover:text-text"
+              }`}
+            >
+              <Icon size={17} />
+              <span className="hidden lg:inline">{t(key)}</span>
+            </Link>
+          );
+        })}
       </nav>
-      <div className="ml-auto flex items-center gap-3">
+      <div className="ml-auto flex shrink-0 items-center gap-2">
         {user && progress ? <ProgressChip level={progress.level} xp={progress.xp} streak={progress.streak} streakSafe={progress.streakToday} href={accountHref} effects={settings.effects} /> : null}
         {!user ? (
-          <Link href="/login" className="group hidden items-center gap-2 rounded-full px-3 py-1.5 text-xs text-sub transition-colors hover:bg-sub-alt hover:text-text md:flex">
+          <Link href="/login" className="group hidden items-center gap-2 rounded-full px-3 py-1.5 text-xs text-sub transition-colors hover:bg-sub-alt hover:text-text xl:flex">
             <LevelBadge level={1} size="xs" className="opacity-70 transition-opacity group-hover:opacity-100" />
             {t("xp.guestPrompt")}
           </Link>
         ) : null}
+        <button
+          type="button"
+          onClick={() => update({ theme: toggledTheme(settings.useCustomTheme ? "claude-dark" : settings.theme), useCustomTheme: false })}
+          title={isLight ? t("theme.dark") : t("theme.light")}
+          aria-label={isLight ? t("theme.dark") : t("theme.light")}
+          className="text-btn grid h-9 w-9 place-items-center rounded-lg hover:bg-[var(--hover)]"
+        >
+          {isLight ? <MoonIcon size={17} /> : <SunIcon size={17} />}
+        </button>
         <Link
           href={accountHref}
           title={user ? t("nav.profile") : t("nav.login")}
           aria-label={user ? `${t("nav.profile")}: ${user.username}` : t("nav.login")}
-          className="text-btn flex h-9 items-center gap-2 px-1 text-sm"
+          className={`flex h-9 items-center gap-2 rounded-full text-sm transition-colors ${
+            user ? "px-2 text-sub hover:bg-[var(--hover)] hover:text-text sm:pr-3.5" : "bg-text px-3.5 text-bg hover:opacity-90"
+          }`}
         >
-          <UserIcon size={19} />
-          {user ? <span className="hidden max-w-40 truncate sm:inline">{user.username}</span> : null}
+          {user ? (
+            <span className="grid h-6 w-6 place-items-center rounded-full bg-main text-[0.7rem] font-semibold text-bg" aria-hidden="true">
+              {user.username.slice(0, 1).toUpperCase()}
+            </span>
+          ) : (
+            <UserIcon size={16} />
+          )}
+          <span className={user ? "hidden max-w-36 truncate sm:inline" : "hidden sm:inline"}>{user ? user.username : t("nav.login")}</span>
         </Link>
       </div>
     </header>

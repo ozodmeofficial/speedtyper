@@ -25,6 +25,9 @@ function t(id: string, name: string, light: boolean, p: Palette): Theme {
 }
 
 export const THEMES: readonly Theme[] = [
+  // warm paper + terracotta (default), and its dark counterpart
+  t("claude", "claude", true, ["#faf9f5", "#c96442", "#c96442", "#a19f96", "#f0eee6", "#1f1e1d", "#b53333", "#7f2626"]),
+  t("claude-dark", "claude dark", false, ["#262624", "#d97757", "#d97757", "#7d7b73", "#30302e", "#ece9e1", "#e5676b", "#9c4044"]),
   t("graphite", "graphite", false, ["#323437", "#e2b714", "#e2b714", "#646669", "#2c2e31", "#d1d0c5", "#ca4754", "#7e2a33"]),
   t("midnight", "midnight ink", false, ["#0f1117", "#7aa2f7", "#7aa2f7", "#3b4261", "#161922", "#c0caf5", "#f7768e", "#a74155"]),
   t("fjord", "fjord", false, ["#2e3440", "#88c0d0", "#d8dee9", "#5d6779", "#272c36", "#eceff4", "#bf616a", "#8e434a"]),
@@ -57,7 +60,14 @@ export const THEMES: readonly Theme[] = [
   t("lilac", "lilac", true, ["#f3effa", "#7c5cc4", "#7c5cc4", "#aa9fc2", "#e9e2f5", "#352b4a", "#d0445c", "#962f41"]),
 ];
 
-export const DEFAULT_THEME = "graphite";
+export const DEFAULT_THEME = "claude";
+/** Light/dark counterpart used by the header toggle. */
+export const THEME_PAIRS: Record<string, string> = { claude: "claude-dark", "claude-dark": "claude", paper: "graphite", graphite: "paper" };
+
+export function toggledTheme(id: string): string {
+  if (THEME_PAIRS[id]) return THEME_PAIRS[id];
+  return getTheme(id).light ? "claude-dark" : "claude";
+}
 
 export function getTheme(id: string | undefined | null): Theme {
   return THEMES.find((x) => x.id === id) ?? THEMES[0];
