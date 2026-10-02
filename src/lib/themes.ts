@@ -25,6 +25,8 @@ function t(id: string, name: string, light: boolean, p: Palette): Theme {
 }
 
 export const THEMES: readonly Theme[] = [
+  // night ember: warm charcoal + sunset orange (default)
+  t("speedtyper", "night ember", false, ["#14110f", "#f2794b", "#f2794b", "#7c7069", "#211b18", "#efe6de", "#f05d5e", "#a33a3c"]),
   // warm paper + terracotta (default), and its dark counterpart
   t("claude", "claude", true, ["#faf9f5", "#c96442", "#c96442", "#a19f96", "#f0eee6", "#1f1e1d", "#b53333", "#7f2626"]),
   t("claude-dark", "claude dark", false, ["#262624", "#d97757", "#d97757", "#7d7b73", "#30302e", "#ece9e1", "#e5676b", "#9c4044"]),
@@ -60,13 +62,13 @@ export const THEMES: readonly Theme[] = [
   t("lilac", "lilac", true, ["#f3effa", "#7c5cc4", "#7c5cc4", "#aa9fc2", "#e9e2f5", "#352b4a", "#d0445c", "#962f41"]),
 ];
 
-export const DEFAULT_THEME = "claude";
+export const DEFAULT_THEME = "speedtyper";
 /** Light/dark counterpart used by the header toggle. */
-export const THEME_PAIRS: Record<string, string> = { claude: "claude-dark", "claude-dark": "claude", paper: "graphite", graphite: "paper" };
+export const THEME_PAIRS: Record<string, string> = { speedtyper: "claude", claude: "speedtyper", "claude-dark": "claude", paper: "graphite", graphite: "paper" };
 
 export function toggledTheme(id: string): string {
   if (THEME_PAIRS[id]) return THEME_PAIRS[id];
-  return getTheme(id).light ? "claude-dark" : "claude";
+  return getTheme(id).light ? "speedtyper" : "claude";
 }
 
 export function getTheme(id: string | undefined | null): Theme {

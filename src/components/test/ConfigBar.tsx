@@ -5,7 +5,7 @@ import { QUOTE_LENGTHS, TIME_OPTIONS, WORD_OPTIONS, type Settings } from "@/lib/
 import type { TestMode } from "@/lib/typing/engine";
 import type { DictKey } from "@/lib/i18n";
 
-function Item({ active, onClick, children, title }: { active?: boolean; onClick: () => void; children: React.ReactNode; title?: string }) {
+function Item({ active, onClick, children, title, compact }: { active?: boolean; onClick: () => void; children: React.ReactNode; title?: string; compact?: boolean }) {
   return (
     <button
       type="button"
@@ -14,14 +14,14 @@ function Item({ active, onClick, children, title }: { active?: boolean; onClick:
       aria-pressed={active}
       onClick={onClick}
       onMouseDown={(e) => e.preventDefault()}
-      className="text-btn flex shrink-0 items-center gap-1.5 px-1.5 py-2 whitespace-nowrap sm:px-2 sm:py-1.5"
+      className={`dock-item !h-9 sm:!h-10 ${compact ? "min-w-11 justify-center !px-3 tabular" : "!px-3 sm:!px-4"}`}
     >
       {children}
     </button>
   );
 }
 
-const Spacer = () => <span className="mx-1.5 h-5 w-px shrink-0 bg-line" aria-hidden="true" />;
+const Spacer = () => <span className="dock-sep" aria-hidden="true" />;
 
 export function ConfigBar({
   settings,
@@ -36,63 +36,64 @@ export function ConfigBar({
   const modes: TestMode[] = ["time", "words", "quote", "zen", "custom"];
   const canPunct = settings.mode === "time" || settings.mode === "words";
 
-  return (
-    <div className="mx-auto flex w-fit max-w-full items-center overflow-x-auto rounded-xl bg-surface px-1.5 text-[0.8rem] leading-none shadow-[inset_0_0_0_1px_var(--border)] [scrollbar-width:none] sm:px-2.5">
-      {canPunct ? (
-        <span className="hidden items-center sm:flex">
-          <Item active={settings.punctuation} onClick={() => update({ punctuation: !settings.punctuation })}>
-            <span className="font-mono text-[0.9em]">@</span>
-            {t("config.punctuation")}
+  const options =
+    settings.mode === "time"
+      ? TIME_OPTIONS.map((n) => (
+          <Item key={n} compact active={settings.time === n} onClick={() => update({ time: n })}>
+            {n}
           </Item>
-          <Item active={settings.numbers} onClick={() => update({ numbers: !settings.numbers })}>
-            <span className="font-mono text-[0.9em]">#</span>
-            {t("config.numbers")}
-          </Item>
-          <Spacer />
-        </span>
-      ) : null}
-      {modes.map((m) => (
-        <Item key={m} active={settings.mode === m} onClick={() => update({ mode: m })}>
-          <span className="hidden sm:inline">
-            <ModeIcon mode={m} />
-          </span>
-          {t(`config.${m}` as DictKey)}
-        </Item>
-      ))}
-      {settings.mode !== "zen" ? <Spacer /> : null}
-      {settings.mode === "time"
-        ? TIME_OPTIONS.map((n) => (
-            <Item key={n} active={settings.time === n} onClick={() => update({ time: n })}>
-              {n}
-            </Item>
-          ))
-        : null}
-      {settings.mode === "words"
+        ))
+      : settings.mode === "words"
         ? WORD_OPTIONS.map((n) => (
-            <Item key={n} active={settings.words === n} onClick={() => update({ words: n })}>
+            <Item key={n} compact active={settings.words === n} onClick={() => update({ words: n })}>
               {n}
             </Item>
           ))
-        : null}
-      {settings.mode === "quote"
-        ? QUOTE_LENGTHS.map((q) => (
-            <Item key={q} active={settings.quoteLength === q} onClick={() => update({ quoteLength: q })}>
-              {t(`quote.${q}` as DictKey)}
+        : settings.mode === "quote"
+          ? QUOTE_LENGTHS.map((q) => (
+              <Item key={q} compact active={settings.quoteLength === q} onClick={() => update({ quoteLength: q })}>
+                {t(`quote.${q}` as DictKey)}
+              </Item>
+            ))
+          : settings.mode === "custom"
+            ? [
+                <Item key="c" onClick={onCustom}>
+                  <span aria-hidden="true">✎</span>
+                  {t("config.change")}
+                </Item>,
+              ]
+            : null;
+
+  return (
+    <div className="mx-auto flex w-full max-w-full flex-wrap items-center justify-center gap-3">
+      <div className="dock text-sm leading-none">
+        {modes.map((m) => (
+          <Item key={m} active={settings.mode === m} onClick={() => update({ mode: m })}>
+            <ModeIcon mode={m} />
+            <span className="first-letter:uppercase">{t(`config.${m}` as DictKey)}</span>
+          </Item>
+        ))}
+        {canPunct ? (
+          <>
+            <Spacer />
+            <Item active={settings.punctuation} onClick={() => update({ punctuation: !settings.punctuation })} title={t("config.punctuation")}>
+              <span className="font-mono text-[1.05em] leading-none">@</span>
+              <span className="hidden first-letter:uppercase md:inline">{t("config.punctuation")}</span>
             </Item>
-          ))
-        : null}
-      {settings.mode === "custom" ? (
-        <Item onClick={onCustom}>
-          <span aria-hidden="true">✎</span>
-          {t("config.change")}
-        </Item>
-      ) : null}
+            <Item active={settings.numbers} onClick={() => update({ numbers: !settings.numbers })} title={t("config.numbers")}>
+              <span className="font-mono text-[1.05em] leading-none">#</span>
+              <span className="hidden first-letter:uppercase md:inline">{t("config.numbers")}</span>
+            </Item>
+          </>
+        ) : null}
+      </div>
+      {options ? <div className="dock text-sm leading-none">{options}</div> : null}
     </div>
   );
 }
 
 function ModeIcon({ mode }: { mode: TestMode }) {
-  const p = { width: 12, height: 12, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2.6, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
+  const p = { width: 16, height: 16, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
   switch (mode) {
     case "time":
       return (

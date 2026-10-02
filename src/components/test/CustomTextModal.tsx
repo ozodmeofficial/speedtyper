@@ -49,7 +49,7 @@ export function CustomTextModal({ onClose, onApply }: { onClose: () => void; onA
         if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) apply();
       }}
     >
-      <div role="dialog" aria-modal="true" aria-labelledby="custom-title" className="w-full max-w-2xl rounded-lg bg-bg p-6 shadow-2xl ring-1 ring-sub-alt">
+      <div role="dialog" aria-modal="true" aria-labelledby="custom-title" className="w-full max-w-2xl rounded-2xl bg-[var(--surface-solid)] p-6 shadow-2xl ring-1 ring-[var(--border-strong)]">
         <h2 id="custom-title" className="mb-4 text-lg text-sub">
           {t("custom.title")}
         </h2>

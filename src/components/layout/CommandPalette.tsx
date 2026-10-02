@@ -194,7 +194,7 @@ export function CommandPalette() {
 
   return (
     <div
-      className="fade-in fixed inset-0 z-50 flex justify-center bg-black/50 px-4 pt-[12vh]"
+      className="fade-in fixed inset-0 z-50 flex justify-center bg-black/55 px-4 pt-[12vh] backdrop-blur-sm"
       data-modal-open
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) close();
@@ -204,7 +204,7 @@ export function CommandPalette() {
         role="dialog"
         aria-modal="true"
         aria-label="command palette"
-        className="flex h-fit max-h-[70vh] w-full max-w-[680px] flex-col overflow-hidden rounded-lg bg-bg shadow-2xl ring-1 ring-sub-alt"
+        className="flex h-fit max-h-[70vh] w-full max-w-[680px] flex-col overflow-hidden rounded-2xl bg-[var(--surface-solid)] shadow-2xl ring-1 ring-[var(--border-strong)]"
         onKeyDown={onKey}
       >
         <input
@@ -224,7 +224,7 @@ export function CommandPalette() {
           spellCheck={false}
           autoComplete="off"
         />
-        <div ref={listRef} id="palette-list" role="listbox" className="overflow-y-auto pb-2">
+        <div ref={listRef} id="palette-list" role="listbox" className="overflow-y-auto border-t border-line px-2 py-2">
           {filtered.length === 0 ? (
             <div className="px-5 py-3 text-sm text-sub">{t("palette.empty")}</div>
           ) : (
@@ -237,10 +237,10 @@ export function CommandPalette() {
                 aria-selected={i === sel}
                 onMouseMove={() => i !== sel && setSel(i)}
                 onClick={() => choose(c)}
-                className={`flex cursor-pointer items-center gap-3 px-5 py-2 text-sm ${i === sel ? "bg-text text-bg" : "text-text"}`}
+                className={`flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-sm ${i === sel ? "bg-[var(--main-soft)] text-text shadow-[inset_0_0_0_1px_var(--main-line)]" : "text-text"}`}
               >
-                <span className="w-4 shrink-0 text-center">{c.active ? "✓" : ""}</span>
-                <span className={i === sel ? "opacity-70" : "text-sub"}>{c.group}</span>
+                <span className="w-4 shrink-0 text-center text-main">{c.active ? "✓" : ""}</span>
+                <span className="text-sub">{c.group}</span>
                 <span className="opacity-50">›</span>
                 <span className="truncate">{c.label}</span>
                 {c.swatch ? (
@@ -254,7 +254,7 @@ export function CommandPalette() {
             ))
           )}
         </div>
-        <div className="border-t border-sub-alt px-5 py-2 text-[0.7rem] text-sub">{t("palette.hint")}</div>
+        <div className="border-t border-line px-5 py-2.5 text-[0.7rem] text-sub">{t("palette.hint")}</div>
       </div>
     </div>
   );

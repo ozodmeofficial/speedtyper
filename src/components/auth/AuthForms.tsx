@@ -80,11 +80,11 @@ export function AuthForms() {
   return (
     <div className="mx-auto grid w-full max-w-4xl flex-1 content-center items-start gap-6 py-12 md:grid-cols-2 md:gap-8">
       <form onSubmit={onRegister} className="card fade-in flex flex-col gap-3 p-6 sm:p-8" noValidate>
-        <h1 className="mb-2 flex items-center gap-2.5 text-lg text-text">
-          <span className="grid h-8 w-8 place-items-center rounded-full bg-bg text-main">
+        <h1 className="mb-2 flex items-center gap-3 text-lg font-semibold text-text">
+          <span className="tile !h-9 !w-9 !rounded-xl">
             <UserIcon size={16} />
           </span>
-          {t("auth.registerTitle")}
+          <span className="first-letter:uppercase">{t("auth.registerTitle")}</span>
         </h1>
         <Field name="username" label={t("auth.username")} hint={t("auth.usernameHint")} autoComplete="username" maxLength={20} required />
         <Field name="email" type="email" label={t("auth.email")} autoComplete="email" maxLength={254} />
@@ -97,7 +97,7 @@ export function AuthForms() {
           {busy === "reg" ? <Spinner /> : null}
           {t("auth.submitRegister")}
         </button>
-        <div className="mt-3 border-t-4 border-bg pt-4">
+        <div className="mt-3 border-t border-line pt-4">
           <p className="mb-2.5 text-xs text-sub">{t("auth.perksTitle")}</p>
           <ul className="flex flex-col gap-2 text-sm text-text">
             <li className="flex items-center gap-2.5">
@@ -121,11 +121,11 @@ export function AuthForms() {
       </form>
 
       <form onSubmit={onLogin} className="card fade-in flex flex-col gap-3 p-6 sm:p-8" noValidate>
-        <h2 className="mb-2 flex items-center gap-2.5 text-lg text-text">
-          <span className="grid h-8 w-8 place-items-center rounded-full bg-bg text-main">
+        <h2 className="mb-2 flex items-center gap-3 text-lg font-semibold text-text">
+          <span className="tile !h-9 !w-9 !rounded-xl">
             <LockIcon size={16} />
           </span>
-          {t("auth.loginTitle")}
+          <span className="first-letter:uppercase">{t("auth.loginTitle")}</span>
         </h2>
         <Field name="username" label={t("auth.username")} autoComplete="username" maxLength={254} required />
         <Field name="password" type="password" label={t("auth.password")} autoComplete="current-password" maxLength={128} required />

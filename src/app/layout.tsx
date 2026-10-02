@@ -12,6 +12,7 @@ import { AppProvider } from "@/components/providers/AppProvider";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { PaletteHost } from "@/components/layout/PaletteHost";
+import { Backdrop } from "@/components/layout/Backdrop";
 
 const APP_URL = process.env.APP_URL ?? "http://localhost:3000";
 
@@ -39,7 +40,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#faf9f5",
+  themeColor: "#14110f",
   colorScheme: "dark light",
 };
 
@@ -54,7 +55,7 @@ function themeScript(): string {
   const vars = COLOR_KEYS.map((k) => THEME_VARS[k]);
   return `(function(){try{var r=localStorage.getItem("st_settings");if(!r)return;var o=JSON.parse(r),d=document.documentElement,T=${JSON.stringify(
     table,
-  )},V=${JSON.stringify(vars)},K=${JSON.stringify(COLOR_KEYS)},L=${JSON.stringify(light)},c=null,th=o.v!==${SETTINGS_VERSION}&&o.theme==="graphite"?"${DEFAULT_THEME}":o.theme;if(o.useCustomTheme&&o.customTheme){c=K.map(function(k){return o.customTheme[k]})}else if(T[th]){c=T[th];d.style.colorScheme=L.indexOf(th)>=0?"light":"dark"}if(c)for(var i=0;i<V.length;i++){if(/^#[0-9a-f]{6}$/i.test(c[i]))d.style.setProperty(V[i],c[i])}if(typeof o.fontFamily==="string"&&/^[a-z_]+$/.test(o.fontFamily))d.style.setProperty("--typing-font","var(--font-"+o.fontFamily.replace(/_/g,"-")+")");if(typeof o.fontSize==="number")d.style.setProperty("--font-size",o.fontSize+"rem")}catch(e){}})();`;
+  )},V=${JSON.stringify(vars)},K=${JSON.stringify(COLOR_KEYS)},L=${JSON.stringify(light)},c=null,th=o.v!==${SETTINGS_VERSION}&&(!o.theme||o.theme==="graphite"||(o.v===2&&o.theme==="claude"))?"${DEFAULT_THEME}":o.theme;if(o.useCustomTheme&&o.customTheme){c=K.map(function(k){return o.customTheme[k]})}else if(T[th]){c=T[th];d.style.colorScheme=L.indexOf(th)>=0?"light":"dark"}if(c)for(var i=0;i<V.length;i++){if(/^#[0-9a-f]{6}$/i.test(c[i]))d.style.setProperty(V[i],c[i])}if(typeof o.fontFamily==="string"&&/^[a-z_]+$/.test(o.fontFamily))d.style.setProperty("--typing-font","var(--font-"+o.fontFamily.replace(/_/g,"-")+")");if(typeof o.fontSize==="number")d.style.setProperty("--font-size",o.fontSize+"rem")}catch(e){}})();`;
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -84,6 +85,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <script nonce={nonce} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: themeScript() }} />
       </head>
       <body>
+        <Backdrop />
         <a href="#main" className="skip-link">
           {t("nav.skip")}
         </a>

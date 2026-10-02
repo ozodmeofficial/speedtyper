@@ -15,7 +15,7 @@ function Seg<T extends string | number | boolean>({ value, options, onChange }: 
   return (
     <div className="flex flex-wrap gap-1.5">
       {options.map((o) => (
-        <button key={String(o.v)} type="button" onClick={() => onChange(o.v)} aria-pressed={value === o.v} className={`btn rc-press px-3 py-1.5 text-sm ${value === o.v ? "active" : ""}`}>
+        <button key={String(o.v)} type="button" onClick={() => onChange(o.v)} aria-pressed={value === o.v} className={`btn rc-press !rounded-xl px-3.5 py-1.5 text-sm ${value === o.v ? "active" : ""}`}>
           {o.label}
         </button>
       ))}
@@ -106,11 +106,11 @@ export function Lobby({
             <div className="label mb-2">{t("race.language")}</div>
             <Seg value={lang} options={langOptions} onChange={chooseLang} />
           </div>
-          <button type="button" onClick={() => send({ t: "quick", lang })} className="btn btn-primary rc-quick w-full py-3 text-base">
+          <button type="button" onClick={() => send({ t: "quick", lang })} className="btn btn-primary rc-quick w-full !rounded-2xl py-3.5 text-base">
             <BoltIcon size={18} /> {t("race.quick")}
           </button>
           <p className="-mt-2 text-xs text-sub">{t("race.quickDesc")}</p>
-          <div className="border-t-2 border-bg pt-5">
+          <div className="border-t border-line pt-5">
             <div className="label mb-2">{t("race.nickname")}</div>
             {signedIn ? (
               <div className="text-sm text-text">{me?.name}</div>
@@ -142,7 +142,12 @@ export function Lobby({
         </div>
 
         <div className="rc-card card flex flex-col gap-4 p-6">
-          <h2 className="text-text">{t("race.create")}</h2>
+          <h2 className="flex items-center gap-3 text-lg font-semibold text-text">
+            <span className="tile !h-9 !w-9 !rounded-xl">
+              <UsersIcon size={17} />
+            </span>
+            {t("race.create")}
+          </h2>
           <div>
             <div className="label mb-2">{t("race.visibility")}</div>
             <Seg value={pub} options={[{ v: false, label: t("race.private") }, { v: true, label: t("race.public") }]} onChange={setPub} />
@@ -169,11 +174,11 @@ export function Lobby({
             <div className="label mb-2">{t("race.maxPlayers")}</div>
             <Seg value={max} options={[2, 5, 10, 50, 100, 200].map((n) => ({ v: n, label: String(n) }))} onChange={setMax} />
           </div>
-          <button type="button" className="btn btn-primary rc-quick mt-1 w-full" onClick={() => send({ t: "create", pub, lang, tt, len, max })}>
+          <button type="button" className="btn btn-primary rc-quick mt-1 w-full !rounded-2xl py-3" onClick={() => send({ t: "create", pub, lang, tt, len, max })}>
             {t("race.create")}
           </button>
           <form
-            className="mt-1 flex gap-2 border-t-2 border-bg pt-4"
+            className="mt-1 flex gap-2 border-t border-line pt-4"
             onSubmit={(e) => {
               e.preventDefault();
               if (code.trim()) send({ t: "join", code: code.trim().toUpperCase() });
@@ -193,7 +198,7 @@ export function Lobby({
         </div>
       </div>
 
-      <h2 className="mt-10 mb-3 text-sm text-sub">{t("race.rooms")}</h2>
+      <h2 className="mt-10 mb-3 text-lg font-semibold text-text">{t("race.rooms")}</h2>
       {rooms.length === 0 ? (
         <p className="rc-card card px-5 py-8 text-center text-sm text-sub">{t("race.noRooms")}</p>
       ) : (

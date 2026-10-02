@@ -126,7 +126,7 @@ export function ResultView({
 
   return (
     <div className="fade-in mx-auto w-full" aria-live="polite" data-fx={effects ? "1" : "0"}>
-      <div ref={shotRef} className="relative">
+      <div ref={shotRef} className="card relative p-5 sm:p-8">
         <div className="grid grid-cols-1 gap-x-10 gap-y-6 md:grid-cols-[auto_1fr]">
           <div className="flex gap-10 md:flex-col md:gap-3">
             <Stat big label="wpm" value={num(result.wpm)} title={`${result.wpm.toFixed(2)} wpm`} />
@@ -141,7 +141,7 @@ export function ResultView({
             <ResultChart wpm={result.wpmHistory} raw={result.rawHistory} errors={result.errorHistory} />
           </div>
         </div>
-        <div className="mt-6 flex flex-wrap items-start gap-x-12 gap-y-4">
+        <div className="mt-6 flex flex-wrap items-start gap-x-12 gap-y-4 border-t border-line pt-6">
           <div className="reveal min-w-0" style={{ ["--d" as string]: "180ms" }}>
             <div className="text-sm leading-tight text-sub">{t("result.testType")}</div>
             <div className="text-[1rem] leading-snug text-main">
@@ -192,10 +192,11 @@ export function ResultView({
         </div>
       ) : null}
 
-      <div className="mt-8 flex items-center justify-center gap-2">
-        <IconButton label={t("result.next")} onClick={onNext}>
-          <ChevronRightIcon size={22} />
-        </IconButton>
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-2.5">
+        <button type="button" onClick={onNext} className="btn btn-primary group !h-12 !rounded-2xl !px-8 text-base">
+          {t("result.next")}
+          <ChevronRightIcon size={20} className="transition-transform group-hover:translate-x-0.5" />
+        </button>
         <IconButton label={t("result.repeat")} onClick={onRepeat}>
           <RepeatIcon size={19} />
         </IconButton>
@@ -217,7 +218,7 @@ export function ResultView({
         )}
       </div>
       {toast ? (
-        <div className="toast fixed bottom-8 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-sub-alt px-4 py-2.5 text-sm text-text shadow-lg">{toast}</div>
+        <div className="toast card fixed bottom-8 left-1/2 z-50 -translate-x-1/2 px-4 py-2.5 text-sm text-text">{toast}</div>
       ) : null}
     </div>
   );
@@ -232,7 +233,7 @@ function IconButton({ label, onClick, children, disabled, autoFocus }: { label: 
       onClick={onClick}
       disabled={disabled}
       autoFocus={autoFocus}
-      className="text-btn grid h-12 w-16 place-items-center rounded-lg focus-visible:bg-sub-alt disabled:opacity-40"
+      className="btn grid !h-12 !w-14 place-items-center !rounded-2xl !p-0 text-sub hover:text-text disabled:opacity-40"
     >
       {children}
     </button>

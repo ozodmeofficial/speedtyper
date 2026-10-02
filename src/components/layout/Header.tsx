@@ -22,21 +22,21 @@ const NAV: { href: string; key: DictKey; Icon: typeof KeyboardIcon }[] = [
 
 export function Header() {
   const t = useT();
-  const { user, progress, settings, update } = useApp();
+  const { user, progress, settings, update, openPalette } = useApp();
   const isLight = settings.useCustomTheme && settings.customTheme ? false : getTheme(settings.theme).light;
   const path = usePathname();
   const isActive = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
   const accountHref = user ? `/u/${user.username}` : "/login";
 
   return (
-    <header className="page chrome flex h-[5rem] shrink-0 items-center gap-4 pt-3 sm:gap-6">
+    <header className="page chrome flex h-[5.25rem] shrink-0 items-center gap-3 pt-2 sm:gap-6">
       <Link href="/" className="group flex shrink-0 items-center gap-2.5" aria-label="SpeedTyper">
-        <LogoMark size={30} className="transition-transform duration-200 group-hover:-rotate-6" />
-        <span className="display hidden text-[1.6rem] leading-none text-text min-[420px]:inline">
+        <LogoMark size={34} className="drop-shadow-[0_6px_14px_color-mix(in_srgb,var(--main)_45%,transparent)] transition-transform duration-200 group-hover:-rotate-6" />
+        <span className="display hidden text-[1.55rem] leading-none text-text min-[460px]:inline">
           Speed<span className="text-main">Typer</span>
         </span>
       </Link>
-      <nav className="flex min-w-0 items-center gap-0.5 overflow-x-auto [scrollbar-width:none]" aria-label="main">
+      <nav className="mx-auto flex min-w-0 items-center gap-1 overflow-x-auto [scrollbar-width:none]" aria-label="main">
         {NAV.map(({ href, key, Icon }) => {
           const active = isActive(href);
           return (
@@ -46,49 +46,52 @@ export function Header() {
               title={t(key)}
               aria-label={t(key)}
               aria-current={active ? "page" : undefined}
-              className={`flex h-9 shrink-0 items-center gap-2 rounded-lg px-2.5 text-sm transition-colors ${
-                active ? "bg-sub-alt text-text shadow-[inset_0_0_0_1px_var(--border)]" : "text-sub hover:bg-[var(--hover)] hover:text-text"
-              }`}
+              className="dock-item h-10 !gap-2 !px-3 lg:!px-3.5"
             >
               <Icon size={17} />
-              <span className="hidden lg:inline">{t(key)}</span>
+              <span className="hidden first-letter:uppercase lg:inline-block">{t(key)}</span>
             </Link>
           );
         })}
       </nav>
-      <div className="ml-auto flex shrink-0 items-center gap-2">
-        {user && progress ? <ProgressChip level={progress.level} xp={progress.xp} streak={progress.streak} streakSafe={progress.streakToday} href={accountHref} effects={settings.effects} /> : null}
-        {!user ? (
-          <Link href="/login" className="group hidden items-center gap-2 rounded-full px-3 py-1.5 text-xs text-sub transition-colors hover:bg-sub-alt hover:text-text xl:flex">
-            <LevelBadge level={1} size="xs" className="opacity-70 transition-opacity group-hover:opacity-100" />
-            {t("xp.guestPrompt")}
-          </Link>
-        ) : null}
+      <div className="flex shrink-0 items-center gap-2">
+        {user && progress && !(path === "/" && settings.dashboard) ? <ProgressChip level={progress.level} xp={progress.xp} streak={progress.streak} streakSafe={progress.streakToday} href={accountHref} effects={settings.effects} /> : null}
         <button
           type="button"
-          onClick={() => update({ theme: toggledTheme(settings.useCustomTheme ? "claude-dark" : settings.theme), useCustomTheme: false })}
+          onClick={() => openPalette()}
+          title={t("test.hintPalette")}
+          aria-label={t("test.hintPalette")}
+          className="hidden h-9 items-center gap-1 rounded-lg px-2.5 font-mono text-xs text-sub shadow-[inset_0_0_0_1px_var(--border-strong)] transition-colors hover:bg-[var(--hover)] hover:text-text md:flex"
+        >
+          <span className="text-[0.85rem] leading-none">⌘</span> K
+        </button>
+        <button
+          type="button"
+          onClick={() => update({ theme: toggledTheme(settings.useCustomTheme ? "speedtyper" : settings.theme), useCustomTheme: false })}
           title={isLight ? t("theme.dark") : t("theme.light")}
           aria-label={isLight ? t("theme.dark") : t("theme.light")}
           className="text-btn grid h-9 w-9 place-items-center rounded-lg hover:bg-[var(--hover)]"
         >
-          {isLight ? <MoonIcon size={17} /> : <SunIcon size={17} />}
+          {isLight ? <MoonIcon size={18} /> : <SunIcon size={18} />}
         </button>
         <Link
           href={accountHref}
           title={user ? t("nav.profile") : t("nav.login")}
           aria-label={user ? `${t("nav.profile")}: ${user.username}` : t("nav.login")}
-          className={`flex h-9 items-center gap-2 rounded-full text-sm transition-colors ${
-            user ? "px-2 text-sub hover:bg-[var(--hover)] hover:text-text sm:pr-3.5" : "bg-text px-3.5 text-bg hover:opacity-90"
+          className={`flex h-10 items-center gap-2 rounded-full text-sm font-medium transition-all ${
+            user
+              ? "px-1.5 text-sub hover:bg-[var(--hover)] hover:text-text sm:pr-3.5"
+              : "bg-text px-3 text-bg shadow-[0_6px_20px_-8px_color-mix(in_srgb,var(--text)_60%,transparent)] hover:opacity-90 sm:px-4"
           }`}
         >
           {user ? (
-            <span className="grid h-6 w-6 place-items-center rounded-full bg-main text-[0.7rem] font-semibold text-bg" aria-hidden="true">
+            <span className="grid h-7 w-7 place-items-center rounded-full bg-main text-[0.75rem] font-semibold text-bg" aria-hidden="true">
               {user.username.slice(0, 1).toUpperCase()}
             </span>
           ) : (
             <UserIcon size={16} />
           )}
-          <span className={user ? "hidden max-w-36 truncate sm:inline" : "hidden sm:inline"}>{user ? user.username : t("nav.login")}</span>
+          <span className={user ? "hidden max-w-36 truncate sm:inline" : "hidden first-letter:uppercase sm:inline-block"}>{user ? user.username : t("nav.login")}</span>
         </Link>
       </div>
     </header>

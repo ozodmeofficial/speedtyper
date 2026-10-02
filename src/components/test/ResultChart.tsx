@@ -112,7 +112,7 @@ export function ResultChart({ wpm, raw, errors, height = 200 }: Props) {
       ) : null}
       {hover !== null && width > 0 ? (
         <div
-          className="pointer-events-none absolute top-1 z-10 rounded-md bg-bg px-3 py-2 text-xs shadow-lg ring-1 ring-sub-alt tabular"
+          className="pointer-events-none absolute top-1 z-10 rounded-lg bg-[var(--surface-solid)] px-3 py-2 text-xs shadow-lg ring-1 ring-[var(--border-strong)] tabular"
           style={{ left: Math.min(Math.max(x(hover) + 12, 0), width - 130) }}
         >
           <div className="mb-1 text-sub">{hover + 1}s</div>

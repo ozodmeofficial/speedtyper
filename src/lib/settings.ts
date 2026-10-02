@@ -64,12 +64,14 @@ export interface Settings {
   showKeyTips: boolean;
   /** caret glow, word flash, combo counter, result animations, confetti */
   effects: boolean;
+  /** home dashboard: level bar, live stat cards and daily widgets */
+  dashboard: boolean;
   /** settings schema version (see sanitizeSettings) */
   v: number;
 }
 
-/** v2: the default theme changed from "graphite" to "claude" */
-export const SETTINGS_VERSION = 2;
+/** v2: the default theme changed from "graphite" to "claude"; v3: from "claude" to "speedtyper" */
+export const SETTINGS_VERSION = 3;
 
 export const DEFAULT_SETTINGS: Settings = {
   mode: "time",
@@ -100,6 +102,7 @@ export const DEFAULT_SETTINGS: Settings = {
   minAcc: 0,
   showKeyTips: true,
   effects: true,
+  dashboard: true,
   v: SETTINGS_VERSION,
 };
 
@@ -112,8 +115,8 @@ const num = (v: unknown, min: number, max: number, d: number) =>
 export function sanitizeSettings(input: unknown): Settings {
   const s = (input && typeof input === "object" ? input : {}) as Record<string, unknown>;
   const d = DEFAULT_SETTINGS;
-  // settings saved before v2 still carry the old default theme: move them to the new one once
-  const legacyDefault = s.v !== SETTINGS_VERSION && (s.theme === "graphite" || s.theme === undefined);
+  // settings saved by an older version still carry that version's default theme: move them to the new one once
+  const legacyDefault = s.v !== SETTINGS_VERSION && (s.theme === undefined || s.theme === "graphite" || (s.v === 2 && s.theme === "claude"));
   return {
     mode: oneOf(s.mode, MODES, d.mode),
     time: num(s.time, 1, 3600, d.time),
@@ -143,6 +146,7 @@ export function sanitizeSettings(input: unknown): Settings {
     minAcc: num(s.minAcc, 0, 100, d.minAcc),
     showKeyTips: bool(s.showKeyTips, d.showKeyTips),
     effects: bool(s.effects, d.effects),
+    dashboard: bool(s.dashboard, d.dashboard),
     v: SETTINGS_VERSION,
   };
 }
@@ -153,7 +157,7 @@ export const CUSTOM_TEXT_STORAGE = "st_custom_text";
 
 /** Only non-default values are stored in the cookie to keep it small. */
 export function encodeSettingsCookie(s: Settings): string {
-  // the version is always kept so an explicit "graphite" is not migrated again
+  // the version is always kept so an explicit old default theme is not migrated again
   const diff: Record<string, unknown> = { v: s.v };
   for (const k of Object.keys(s) as (keyof Settings)[]) {
     if (JSON.stringify(s[k]) !== JSON.stringify(DEFAULT_SETTINGS[k])) diff[k] = s[k];

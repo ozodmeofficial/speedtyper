@@ -12,33 +12,37 @@
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-typing: var(--typing-font), var(--font-roboto-mono), ui-monospace, monospace;
   --font-mono: var(--font-roboto-mono), ui-monospace, monospace;
-  --font-display: var(--font-source-serif), ui-serif, Georgia, "Times New Roman", serif;
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --color-line: var(--border);
   --color-surface: var(--surface);
 }
 
 :root {
-  --bg: #faf9f5;
-  --main: #c96442;
-  --caret: #c96442;
-  --sub: #a19f96;
-  --sub-alt: #f0eee6;
-  --text: #1f1e1d;
-  --error: #b53333;
-  --error-extra: #7f2626;
-  --colorful-error: #b53333;
-  --colorful-error-extra: #7f2626;
+  --bg: #14110f;
+  --main: #f2794b;
+  --caret: #f2794b;
+  --sub: #7c7069;
+  --sub-alt: #211b18;
+  --text: #efe6de;
+  --error: #f05d5e;
+  --error-extra: #a33a3c;
+  --colorful-error: #f05d5e;
+  --colorful-error-extra: #a33a3c;
   --typing-font: var(--font-roboto-mono);
   --font-size: 1.5rem;
-  --radius: 0.75rem;
-  --page-width: 1080px;
+  --radius: 1rem;
+  --page-width: 1200px;
   /* derived from the theme so every palette gets the same quiet chrome */
-  --border: color-mix(in srgb, var(--text) 10%, transparent);
-  --border-strong: color-mix(in srgb, var(--text) 18%, transparent);
-  --surface: color-mix(in srgb, var(--sub-alt) 60%, var(--bg));
+  --border: color-mix(in srgb, var(--text) 8%, transparent);
+  --border-strong: color-mix(in srgb, var(--text) 16%, transparent);
+  --surface: color-mix(in srgb, var(--sub-alt) 78%, transparent);
+  --surface-solid: color-mix(in srgb, var(--sub-alt) 70%, var(--bg));
   --hover: color-mix(in srgb, var(--text) 6%, transparent);
-  --shadow: 0 1px 2px color-mix(in srgb, var(--text) 5%, transparent), 0 4px 16px color-mix(in srgb, var(--text) 4%, transparent);
-  color-scheme: light;
+  --main-soft: color-mix(in srgb, var(--main) 14%, transparent);
+  --main-line: color-mix(in srgb, var(--main) 45%, transparent);
+  --muted: color-mix(in srgb, var(--text) 62%, var(--sub));
+  --shadow: 0 1px 0 color-mix(in srgb, var(--text) 4%, transparent) inset, 0 12px 32px -12px rgb(0 0 0 / 0.35);
+  color-scheme: dark;
 }
 
 @layer base {
@@ -47,7 +51,9 @@
 }
 
 html {
-  background: var(--bg);
+  background:
+    radial-gradient(1200px 520px at 50% -180px, color-mix(in srgb, var(--main) 7%, transparent), transparent 70%),
+    var(--bg);
   scrollbar-gutter: stable;
   scrollbar-color: var(--sub-alt) transparent;
 }
@@ -55,14 +61,15 @@ html {
 h1,
 .display {
   font-family: var(--font-display);
-  font-weight: 450;
-  letter-spacing: -0.015em;
+  font-weight: 650;
+  letter-spacing: -0.025em;
 }
 
 body {
   margin: 0;
   min-height: 100dvh;
-  background: var(--bg);
+  /* the page background lives on <html> so the fixed backdrop can sit between it and the content */
+  background: transparent;
   color: var(--text);
   font-family: var(--font-sans);
   font-size: 1rem;
@@ -70,7 +77,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  transition: background-color 0.2s ease;
 }
 
 ::selection {
@@ -137,7 +143,7 @@ body[data-typing="1"] {
   justify-content: center;
   gap: 0.5em;
   padding: 0.55rem 1.1rem;
-  border-radius: calc(var(--radius) - 2px);
+  border-radius: calc(var(--radius) - 4px);
   background: var(--sub-alt);
   color: var(--text);
   line-height: 1.25;
@@ -155,25 +161,32 @@ body[data-typing="1"] {
 }
 .btn.active,
 .btn[aria-pressed="true"] {
-  background: var(--text);
-  color: var(--bg);
-  box-shadow: none;
+  background: var(--main-soft);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--main-line);
 }
 .btn.active:hover:not(:disabled),
 .btn[aria-pressed="true"]:hover:not(:disabled) {
-  background: var(--text);
+  background: color-mix(in srgb, var(--main) 20%, transparent);
+  box-shadow: inset 0 0 0 1px var(--main-line);
 }
 .btn:disabled {
   opacity: 0.5;
 }
 .btn-primary,
 .btn-primary:hover:not(:disabled) {
-  background: var(--main);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--main) 88%, #fff), var(--main));
   color: var(--bg);
-  box-shadow: none;
+  font-weight: 600;
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 25%, transparent) inset,
+    0 8px 24px -6px color-mix(in srgb, var(--main) 55%, transparent);
 }
 .btn-primary:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--main) 88%, var(--text));
+  filter: brightness(1.06);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 25%, transparent) inset,
+    0 10px 30px -6px color-mix(in srgb, var(--main) 70%, transparent);
 }
 
 .text-btn {
@@ -191,7 +204,7 @@ body[data-typing="1"] {
 
 .input {
   width: 100%;
-  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
   color: var(--text);
   border: 1px solid var(--border-strong);
   border-radius: calc(var(--radius) - 2px);
@@ -230,13 +243,117 @@ select.input {
   box-shadow:
     inset 0 0 0 1px var(--border),
     var(--shadow);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  backdrop-filter: blur(14px) saturate(1.1);
 }
 .card .input,
 .card .btn:not(.active):not(.btn-primary):not([aria-pressed="true"]) {
-  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
 }
 .card .btn:not(.active):not(.btn-primary):not([aria-pressed="true"]):hover:not(:disabled) {
   background: color-mix(in srgb, var(--text) 6%, var(--bg));
+}
+.card-hover {
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+.card-hover:hover {
+  box-shadow:
+    inset 0 0 0 1px var(--border-strong),
+    var(--shadow);
+}
+
+/* rounded icon tile used in stat cards and widgets */
+.tile {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.8rem;
+  color: var(--main);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--main) 18%, transparent), color-mix(in srgb, var(--main) 6%, transparent));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--main) 18%, transparent);
+}
+.tile.muted {
+  color: var(--muted);
+  background: color-mix(in srgb, var(--text) 5%, transparent);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+/* progress meter: quiet track + warm gradient fill */
+.meter {
+  position: relative;
+  height: 0.45rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 9%, transparent);
+}
+.meter > span {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  transform-origin: left center;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--main) 80%, #ff4d2e), color-mix(in srgb, var(--main) 80%, #ffc07a));
+  box-shadow: 0 0 12px color-mix(in srgb, var(--main) 45%, transparent);
+  transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* pill-shaped toolbar (mode bar, nav) */
+.dock {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.25rem;
+  overflow-x: auto;
+  padding: 0.35rem;
+  border-radius: 1.1rem;
+  background: var(--surface);
+  box-shadow:
+    inset 0 0 0 1px var(--border),
+    var(--shadow);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  scrollbar-width: none;
+}
+.dock-item {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.55rem;
+  height: 2.5rem;
+  padding: 0 1rem;
+  border-radius: 0.8rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.dock-item:hover {
+  color: var(--text);
+  background: var(--hover);
+}
+.dock-item[aria-pressed="true"],
+.dock-item[aria-current="page"] {
+  color: var(--text);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--main) 18%, transparent), color-mix(in srgb, var(--main) 8%, transparent));
+  box-shadow:
+    inset 0 0 0 1px var(--main-line),
+    0 6px 18px -8px color-mix(in srgb, var(--main) 60%, transparent);
+}
+.dock-item svg {
+  opacity: 0.85;
+}
+.dock-sep {
+  width: 1px;
+  height: 1.5rem;
+  flex-shrink: 0;
+  margin: 0 0.25rem;
+  background: var(--border-strong);
 }
 
 /* segmented control: a quiet track with a raised selected item */
@@ -246,9 +363,9 @@ select.input {
   align-items: center;
   gap: 2px;
   overflow-x: auto;
-  padding: 3px;
-  border-radius: calc(var(--radius) - 1px);
-  background: var(--sub-alt);
+  padding: 4px;
+  border-radius: calc(var(--radius) - 2px);
+  background: var(--surface);
   box-shadow: inset 0 0 0 1px var(--border);
   scrollbar-width: none;
 }
@@ -257,9 +374,9 @@ select.input {
   display: inline-flex;
   align-items: center;
   gap: 0.4em;
-  padding: 0.35rem 0.8rem;
-  border-radius: calc(var(--radius) - 4px);
-  color: var(--sub);
+  padding: 0.4rem 0.85rem;
+  border-radius: calc(var(--radius) - 6px);
+  color: var(--muted);
   font-size: 0.875rem;
   white-space: nowrap;
   transition:
@@ -273,11 +390,9 @@ select.input {
 }
 .seg > [aria-current="page"],
 .seg > [aria-pressed="true"] {
-  background: var(--bg);
+  background: var(--main-soft);
   color: var(--text);
-  box-shadow:
-    0 0 0 1px var(--border),
-    0 1px 3px color-mix(in srgb, var(--text) 8%, transparent);
+  box-shadow: inset 0 0 0 1px var(--main-line);
 }
 .pill {
   display: inline-flex;
@@ -304,14 +419,14 @@ select.input {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--main) 45%, transparent);
 }
 .eyebrow {
-  color: var(--sub);
+  color: var(--muted);
   font-size: 0.72rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .label {
-  color: var(--sub);
+  color: var(--muted);
   font-size: 0.8rem;
 }
 
@@ -321,7 +436,7 @@ select.input {
   font-variant-numeric: tabular-nums;
 }
 .table th {
-  color: var(--sub);
+  color: var(--muted);
   font-weight: 400;
   font-size: 0.75rem;
   text-align: left;
@@ -504,14 +619,20 @@ select.input {
 
 kbd,
 .kbd {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6rem;
   font-family: var(--font-mono);
   font-size: 0.72rem;
   line-height: 1;
-  padding: 0.28rem 0.42rem;
-  border-radius: 0.3rem;
-  background: var(--sub);
-  color: var(--bg);
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.45rem;
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  color: var(--text);
+  box-shadow:
+    inset 0 0 0 1px var(--border-strong),
+    inset 0 -2px 0 color-mix(in srgb, var(--text) 8%, transparent);
 }
 
 .fade-in {
@@ -777,4 +898,92 @@ kbd,
   .word-flash {
     display: none;
   }
+}
+
+/* ---------- landscape backdrop ---------- */
+.backdrop {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: -1;
+  height: min(52vh, 460px);
+  pointer-events: none;
+  overflow: hidden;
+}
+.backdrop svg {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: max(100%, 1400px);
+  height: 100%;
+  transform: translateX(-50%);
+}
+.backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, var(--bg) 0%, transparent 35%);
+}
+body[data-typing="1"] .backdrop {
+  opacity: 0.55;
+}
+.backdrop {
+  transition: opacity 0.4s ease;
+}
+
+.hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--sub);
+  font-size: 0.8rem;
+}
+
+.ember-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: #4ade80;
+  box-shadow: 0 0 10px #4ade80;
+}
+
+/* switch used by on/off settings */
+.switch {
+  position: relative;
+  display: inline-flex;
+  width: 2.75rem;
+  height: 1.6rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 12%, transparent);
+  box-shadow: inset 0 0 0 1px var(--border);
+  transition: background-color 0.2s ease;
+}
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 0.2rem;
+  left: 0.2rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 999px;
+  background: var(--text);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.3);
+  transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+.switch[aria-checked="true"] {
+  background: var(--main);
+  box-shadow: 0 0 14px -2px color-mix(in srgb, var(--main) 60%, transparent);
+}
+.switch[aria-checked="true"]::after {
+  transform: translateX(1.15rem);
+  background: #fff;
+}
+
+.label::first-letter {
+  text-transform: uppercase;
+}
+
+/* the dashboard has its own combo card */
+.dash .combo {
+  display: none;
 }

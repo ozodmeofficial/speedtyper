@@ -33,7 +33,7 @@ function Section({ title, children, right }: { title: string; children: React.Re
   return (
     <section className="mt-10">
       <div className="mb-3 flex items-center justify-between gap-4">
-        <h2 className="text-sm tracking-wide text-sub">{title}</h2>
+        <h2 className="text-lg font-semibold text-text first-letter:uppercase">{title}</h2>
         {right}
       </div>
       {children}
@@ -140,7 +140,7 @@ export default async function ProfilePage({ params, searchParams }: { params: Pa
               ) : null}
             </div>
           </div>
-          <div className="flex min-w-0 flex-col gap-3 md:border-l-4 md:border-bg md:pl-8">
+          <div className="flex min-w-0 flex-col gap-3 md:border-l md:border-line md:pl-8">
             <div>
               <div className="mb-2 flex items-baseline justify-between gap-3 text-sm">
                 <span className="text-text">
@@ -165,7 +165,7 @@ export default async function ProfilePage({ params, searchParams }: { params: Pa
             </div>
           </div>
         </div>
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-4 border-t-4 border-bg px-6 py-5 sm:grid-cols-3 lg:grid-cols-5">
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-4 border-t border-line px-6 py-5 sm:grid-cols-3 lg:grid-cols-5">
           {stats.map(([k, v]) => (
             <div key={k} className="flex min-w-0 flex-col justify-between gap-1" title={k === t("profile.timeTyping") ? formatDuration(profile.timeTyping) : undefined}>
               <dt className="text-xs leading-snug text-sub">{k}</dt>

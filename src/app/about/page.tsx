@@ -16,21 +16,21 @@ export default async function AboutPage() {
     [["ctrl", "backspace"], "⌫ word"],
   ];
   const Block = ({ title, text }: { title: string; text: string }) => (
-    <section className="mt-10">
-      <h2 className="mb-2 text-xl text-sub">{title}</h2>
-      <p className="leading-relaxed text-text">{text}</p>
+    <section className="card mt-5 p-6">
+      <h2 className="mb-2 text-lg font-semibold text-main">{title}</h2>
+      <p className="leading-relaxed text-text/90">{text}</p>
     </section>
   );
   return (
     <article className="mx-auto w-full max-w-3xl py-10">
       <h1 className="text-4xl text-text">{t("about.title")}</h1>
       <p className="mt-6 text-lg leading-relaxed text-text">{t("about.p1")}</p>
-      <p className="mt-4 leading-relaxed text-sub">{t("about.p2")}</p>
+      <p className="mt-4 mb-6 leading-relaxed text-sub">{t("about.p2")}</p>
       <Block title={t("about.statsTitle")} text={t("about.stats")} />
       <Block title={t("about.raceTitle")} text={t("about.race")} />
       <Block title={t("about.fairTitle")} text={t("about.fair")} />
-      <section className="mt-10">
-        <h2 className="mb-3 text-xl text-sub">{t("about.shortcutsTitle")}</h2>
+      <section className="card mt-5 p-6">
+        <h2 className="mb-3 text-lg font-semibold text-main">{t("about.shortcutsTitle")}</h2>
         <ul className="space-y-2">
           {shortcuts.map(([keys, label], i) => (
             <li key={i} className="flex items-center gap-3 text-sm">

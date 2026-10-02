@@ -24,32 +24,56 @@ import { playKey } from "@/lib/client/sound";
 
 function Row({ title, desc, children, wide }: { title: string; desc?: string; children: React.ReactNode; wide?: boolean }) {
   return (
-    <div className={`-mx-3 grid gap-3 rounded-lg px-3 py-4 transition-colors hover:bg-[var(--hover)] ${wide ? "" : "md:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] md:gap-8"}`}>
+    <div className={`grid gap-3 px-5 py-5 sm:px-6 ${wide ? "" : "md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] md:items-center md:gap-8"}`}>
       <div>
-        <h3 className="text-text">{title}</h3>
+        <h3 className="font-medium text-text first-letter:uppercase">{title}</h3>
         {desc ? <p className="mt-1 text-sm leading-relaxed text-sub">{desc}</p> : null}
       </div>
-      <div className="flex flex-wrap content-start items-start gap-2">{children}</div>
+      <div className={`flex flex-wrap content-start items-center gap-2 ${wide ? "" : "md:justify-end"}`}>{children}</div>
     </div>
   );
 }
 
 function Opt({ active, onClick, children, style }: { active: boolean; onClick: () => void; children: React.ReactNode; style?: React.CSSProperties }) {
   return (
-    <button type="button" className={`btn min-w-[4.5rem] flex-1 px-3 py-2 text-sm ${active ? "active" : ""}`} aria-pressed={active} onClick={onClick} style={style}>
+    <button type="button" className={`btn min-w-[4.25rem] flex-1 px-3 py-2 text-sm md:flex-none ${active ? "active" : ""}`} aria-pressed={active} onClick={onClick} style={style}>
       {children}
     </button>
   );
 }
 
+function Switch({ on, onChange, label }: { on: boolean; onChange: (v: boolean) => void; label: string }) {
+  return <button type="button" role="switch" aria-checked={on} aria-label={label} className="switch" onClick={() => onChange(!on)} />;
+}
+
+const SECTION_ICONS: Record<string, string> = {
+  behavior: "M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0M14 4v4M8 10v4M16 16v4",
+  input: "M3 7h18v10H3zM7 11h.01M11 11h.01M15 11h.01M8 14h8",
+  sound: "M11 5 6 9H3v6h3l5 4V5ZM15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13",
+  caret: "M12 4v16M8 4h8M8 20h8",
+  appearance: "M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4",
+  theme: "M12 21.5a9.5 9.5 0 1 1 9.5-9.5c0 2.6-2.1 3.5-4 3.5h-2a2 2 0 0 0-1.4 3.4c.4.4.6.9.6 1.4 0 .7-.6 1.2-1.3 1.2H12Z",
+  danger: "M12 3 2 20h20L12 3ZM12 10v4M12 17h.01",
+};
+
+function SectionIcon({ id }: { id: string }) {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d={SECTION_ICONS[id] ?? ""} />
+    </svg>
+  );
+}
+
 function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
-    <section id={id} className="scroll-mt-16">
-      <h2 className="display mt-12 mb-1 flex items-center gap-3 text-2xl text-text">
-        <span>{title}</span>
-        <span className="h-px flex-1 bg-line" aria-hidden="true" />
+    <section id={id} className="scroll-mt-24">
+      <h2 className="mb-3 flex items-center gap-2.5 text-lg font-semibold text-text">
+        <span className="tile !h-8 !w-8 !rounded-lg">
+          <SectionIcon id={id} />
+        </span>
+        <span className="first-letter:uppercase">{title}</span>
       </h2>
-      <div className="divide-y divide-line">{children}</div>
+      <div className={`card divide-y divide-line ${id === "danger" ? "shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--error)_35%,transparent)]" : ""}`}>{children}</div>
     </section>
   );
 }
@@ -59,15 +83,12 @@ export function SettingsPanel() {
   const { t, lang } = useI18n();
   const router = useRouter();
   const onOff = (key: keyof Settings) => (
-    <>
-      <Opt active={s[key] === false} onClick={() => update({ [key]: false } as Partial<Settings>)}>
-        {t("common.off")}
-      </Opt>
-      <Opt active={s[key] === true} onClick={() => update({ [key]: true } as Partial<Settings>)}>
-        {t("common.on")}
-      </Opt>
-    </>
+    <label className="flex cursor-pointer items-center gap-3 text-sm text-sub">
+      <span className="tabular">{s[key] === true ? t("common.on") : t("common.off")}</span>
+      <Switch on={s[key] === true} onChange={(v) => update({ [key]: v } as Partial<Settings>)} label={t("common.on")} />
+    </label>
   );
+  const [activeSection, setActiveSection] = useState("behavior");
 
   const [custom, setCustom] = useState<ThemeColors>(() => s.customTheme ?? pickColors(getTheme(s.theme)));
   const setColor = (k: keyof ThemeColors, v: string) => {
@@ -88,15 +109,28 @@ export function SettingsPanel() {
 
   return (
     <div className="mx-auto w-full py-8">
-      <h1 className="text-4xl text-text">{t("settings.title")}</h1>
-      <p className="mt-2 text-sm text-sub">{t("settings.syncNote")}</p>
-      <nav className="sticky top-0 z-10 -mx-2 mt-6 flex gap-1 overflow-x-auto border-b border-line bg-bg/90 px-2 py-2 backdrop-blur [scrollbar-width:none]" aria-label="sections">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-4xl text-text">{t("settings.title")}</h1>
+          <p className="mt-2 text-sm text-sub">{t("settings.syncNote")}</p>
+        </div>
+      </div>
+      <div className="mt-8 grid items-start gap-8 lg:grid-cols-[15rem_minmax(0,1fr)]">
+      <nav className="dock sticky top-3 z-10 w-full lg:flex-col lg:items-stretch lg:p-2" aria-label="sections">
         {sections.map(([id, label]) => (
-          <a key={id} href={`#${id}`} className="rounded-md px-3 py-1.5 text-sm whitespace-nowrap text-sub transition-colors hover:bg-sub-alt hover:text-text">
-            {label}
+          <a
+            key={id}
+            href={`#${id}`}
+            onClick={() => setActiveSection(id)}
+            aria-current={activeSection === id ? "page" : undefined}
+            className="dock-item !h-10 lg:!justify-start"
+          >
+            <SectionIcon id={id} />
+            <span className="first-letter:uppercase">{label}</span>
           </a>
         ))}
       </nav>
+      <div className="flex min-w-0 flex-col gap-10">
 
       <Section id="behavior" title={t("settings.sectionBehavior")}>
         <Row title={t("settings.language")} desc={t("settings.languageDesc")}>
@@ -204,6 +238,9 @@ export function SettingsPanel() {
       </Section>
 
       <Section id="appearance" title={t("settings.sectionAppearance")}>
+        <Row title={t("settings.dashboard")} desc={t("settings.dashboardDesc")}>
+          {onOff("dashboard")}
+        </Row>
         <Row title={t("settings.effects")} desc={t("settings.effectsDesc")}>
           {onOff("effects")}
         </Row>
@@ -258,17 +295,24 @@ export function SettingsPanel() {
                   onFocus={() => previewTheme(th)}
                   onBlur={() => previewTheme(null)}
                   onClick={() => update({ theme: th.id, useCustomTheme: false })}
-                  className="flex items-center justify-between gap-2 rounded-lg px-3 py-2.5 text-left text-sm transition-transform hover:scale-[1.03]"
-                  style={{ background: th.bg, color: th.main, boxShadow: active ? `0 0 0 2px ${th.main}` : `0 0 0 1px ${th.subAlt}` }}
+                  className="group flex flex-col gap-2.5 rounded-xl p-3 text-left text-sm transition-transform hover:-translate-y-0.5"
+                  style={{ background: th.bg, color: th.text, boxShadow: active ? `0 0 0 2px ${th.main}, 0 8px 24px -10px ${th.main}` : `0 0 0 1px color-mix(in srgb, ${th.text} 12%, transparent)` }}
                 >
-                  <span className="truncate">
-                    {active ? "✓ " : ""}
-                    {th.name}
+                  <span className="flex w-full items-center gap-1.5 font-mono text-[0.8rem] leading-none">
+                    <span style={{ color: th.text }}>type</span>
+                    <span style={{ color: th.sub }}>fast</span>
+                    <span className="inline-block h-3.5 w-0.5 rounded-full" style={{ background: th.caret }} />
                   </span>
-                  <span className="flex shrink-0 gap-1">
-                    {[th.main, th.sub, th.text].map((c, i) => (
-                      <span key={i} className="h-2.5 w-2.5 rounded-full" style={{ background: c }} />
-                    ))}
+                  <span className="flex w-full items-center justify-between gap-2">
+                    <span className="truncate" style={{ color: th.main }}>
+                      {active ? "✓ " : ""}
+                      {th.name}
+                    </span>
+                    <span className="flex shrink-0 gap-1">
+                      {[th.main, th.sub, th.text].map((c, i) => (
+                        <span key={i} className="h-2.5 w-2.5 rounded-full" style={{ background: c }} />
+                      ))}
+                    </span>
                   </span>
                 </button>
               );
@@ -327,6 +371,8 @@ export function SettingsPanel() {
           </button>
         </Row>
       </Section>
+      </div>
+      </div>
     </div>
   );
 }

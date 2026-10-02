@@ -21,33 +21,40 @@ export function Footer() {
   };
 
   return (
-    <footer className="page chrome flex shrink-0 flex-wrap items-center gap-x-6 gap-y-3 py-6 text-xs text-sub">
+    <footer className="page chrome flex shrink-0 flex-wrap items-center gap-x-5 gap-y-3 py-6 text-xs text-sub">
       <button type="button" className="text-btn flex items-center gap-1.5" onClick={() => openPalette()}>
         <TerminalIcon size={14} />
         <span>{t("test.hintPalette")}</span>
       </button>
-      <div className="ml-auto flex items-center gap-5">
-        <label className="flex items-center gap-1.5">
-          <GlobeIcon size={14} />
-          <span className="sr-only">{t("footer.uiLanguage")}</span>
-          <select
-            value={lang}
-            disabled={pending}
-            onChange={(e) => setLang(e.target.value as UiLang)}
-            className="text-btn cursor-pointer appearance-none bg-transparent outline-none"
-            aria-label={t("footer.uiLanguage")}
-          >
-            {UI_LANGS.map((l) => (
-              <option key={l} value={l} className="bg-sub-alt text-text">
-                {UI_LANG_LABELS[l]}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button type="button" className="text-btn flex items-center gap-1.5" onClick={() => openPalette("theme ")}>
-          <PaletteIcon size={14} />
-          <span>{settings.useCustomTheme && settings.customTheme ? "custom" : getTheme(settings.theme).name}</span>
-        </button>
+      <label className="flex items-center gap-1.5">
+        <GlobeIcon size={14} />
+        <span className="sr-only">{t("footer.uiLanguage")}</span>
+        <select
+          value={lang}
+          disabled={pending}
+          onChange={(e) => setLang(e.target.value as UiLang)}
+          className="text-btn cursor-pointer appearance-none bg-transparent outline-none"
+          aria-label={t("footer.uiLanguage")}
+        >
+          {UI_LANGS.map((l) => (
+            <option key={l} value={l} className="bg-sub-alt text-text">
+              {UI_LANG_LABELS[l]}
+            </option>
+          ))}
+        </select>
+      </label>
+      <button type="button" className="text-btn flex items-center gap-1.5" onClick={() => openPalette("theme ")}>
+        <PaletteIcon size={14} />
+        <span>{settings.useCustomTheme && settings.customTheme ? "custom" : getTheme(settings.theme).name}</span>
+      </button>
+      <div className="card ml-auto hidden items-start gap-2 px-4 py-2.5 leading-snug sm:flex">
+        <span className="text-main" aria-hidden="true">
+          ✦
+        </span>
+        <span>
+          <span className="block text-text/80 italic">{t("footer.motto")}</span>
+          <span className="block text-sub">— SpeedTyper</span>
+        </span>
       </div>
     </footer>
   );

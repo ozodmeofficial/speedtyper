@@ -27,6 +27,8 @@ import { nextStreak, effectiveStreak, testXp, type XpAward } from "@/lib/xp";
 import { dayKey } from "@/lib/format";
 import { AnimatedNumber } from "@/components/xp/AnimatedNumber";
 import { FlameIcon } from "@/components/xp/Badges";
+import { AgainButton, GoalPill, LevelStrip, LiveStats, ProgressRow, Widgets } from "./Dashboard";
+import { BOARD_LANGS, BOARD_TIMES } from "@/lib/anticheat";
 
 const ResultView = dynamic(() => import("./ResultView").then((m) => m.ResultView), { ssr: false });
 const CustomTextModal = dynamic(() => import("./CustomTextModal").then((m) => m.CustomTextModal), { ssr: false });
@@ -41,9 +43,50 @@ interface Live {
   wpm: number;
   acc: number;
   typed: number;
+  /** completed words typed correctly */
+  correct: number;
+  /** correct words in a row (up to the last completed word) */
+  combo: number;
 }
 
+const LIVE0: Live = { second: 0, wpm: 0, acc: 100, typed: 0, correct: 0, combo: 0 };
+
 const PB_KEY = "st_pbs";
+const CHALLENGE_KEY = "st_challenge";
+
+interface Challenge {
+  day: number;
+  target: number;
+  best: number;
+}
+
+/** Today's challenge: a speed target derived from the local personal bests, fixed for the day. */
+function readChallenge(): Challenge {
+  const today = dayKey();
+  try {
+    const c = JSON.parse(localStorage.getItem(CHALLENGE_KEY) ?? "null") as Challenge | null;
+    if (c && c.day === today && typeof c.target === "number" && typeof c.best === "number") return c;
+    const pbs = Object.values(JSON.parse(localStorage.getItem(PB_KEY) ?? "{}") as Record<string, number>).filter((n) => typeof n === "number");
+    const pb = pbs.length ? Math.max(...pbs) : 0;
+    const target = pb > 0 ? Math.min(250, Math.max(30, Math.round((pb * 0.9) / 5) * 5)) : 40;
+    const next = { day: today, target, best: 0 };
+    localStorage.setItem(CHALLENGE_KEY, JSON.stringify(next));
+    return next;
+  } catch {
+    return { day: today, target: 40, best: 0 };
+  }
+}
+
+function bumpChallenge(wpm: number): Challenge {
+  const c = readChallenge();
+  const next = { ...c, best: Math.max(c.best, wpm) };
+  try {
+    localStorage.setItem(CHALLENGE_KEY, JSON.stringify(next));
+  } catch {
+    /* ignore */
+  }
+  return next;
+}
 const GUEST_DAILY_KEY = "st_guest_daily";
 
 interface GuestDaily {
@@ -107,7 +150,9 @@ export function TypingTest({ initial }: { initial: InitialTest | null }) {
   const [guestDaily, setGuestDaily] = useState<GuestDaily | null>(null);
   const progressRef = useRef(progress);
   progressRef.current = progress;
-  const [live, setLive] = useState<Live>({ second: 0, wpm: 0, acc: 100, typed: 0 });
+  const [live, setLive] = useState<Live>(LIVE0);
+  const [last, setLast] = useState<{ wpm: number; acc: number } | null>(null);
+  const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [started, setStarted] = useState(false);
   const [customOpen, setCustomOpen] = useState(false);
   const [emptyCustom, setEmptyCustom] = useState(false);
@@ -176,7 +221,7 @@ export function TypingTest({ initial }: { initial: InitialTest | null }) {
     setXpAward(null);
     setGuestXp(null);
     setStarted(false);
-    setLive({ second: 0, wpm: 0, acc: 100, typed: 0 });
+    setLive(LIVE0);
   }, []);
 
   // first test when SSR had none, and a new test whenever test-relevant settings change
@@ -202,6 +247,7 @@ export function TypingTest({ initial }: { initial: InitialTest | null }) {
   // guests: local "tests today" / streak
   useEffect(() => {
     if (!user) setGuestDaily(readGuestDaily());
+    setChallenge(readChallenge());
   }, [user]);
 
   // show chrome again when the mouse moves
@@ -233,6 +279,10 @@ export function TypingTest({ initial }: { initial: InitialTest | null }) {
       setResult(final);
       setPhase("result");
 
+      if (!failed && !invalid) {
+        setLast({ wpm: r.wpm, acc: r.acc });
+        if (!spec.practice) setChallenge(bumpChallenge(r.wpm));
+      }
       if (failed || invalid || spec.practice) {
         setSaveState(user ? "idle" : "guest");
         return;
@@ -351,7 +401,16 @@ export function TypingTest({ initial }: { initial: InitialTest | null }) {
         startTimer();
       }
       if (engine.started) setTyping(true);
-      setLive((l) => ({ ...l, acc: engine.liveAcc(), typed: engine.index }));
+      let correct = 0;
+      let combo = 0;
+      if (engine.mode === "zen") correct = combo = engine.index;
+      else
+        for (let i = 0; i < engine.index; i++) {
+          const ok = engine.inputs[i] === engine.words[i];
+          if (ok) correct++;
+          combo = ok ? combo + 1 : 0;
+        }
+      setLive((l) => ({ ...l, acc: engine.liveAcc(), typed: engine.index, correct, combo }));
       if (finished) finish(null);
     },
     [started, startTimer, finish],
@@ -391,17 +450,77 @@ export function TypingTest({ initial }: { initial: InitialTest | null }) {
         : 0
     : 0;
 
+  const dash = settings.dashboard;
+  const today = dayKey();
+  const streak = user ? (progress?.streak ?? 0) : guestDaily ? effectiveStreak({ current: guestDaily.streak, best: guestDaily.best, lastDay: guestDaily.last }, today) : 0;
+  const streakSafe = user ? !!progress?.streakToday : guestDaily?.last === today;
+  const todayTests = user ? (progress?.today === today ? progress.todayTests : 0) : guestDaily?.day === today ? guestDaily.count : 0;
+  const dailyReady = user ? !!progress : guestDaily !== null;
+  const board = {
+    time: settings.mode === "time" && (BOARD_TIMES as readonly string[]).includes(String(settings.time)) ? String(settings.time) : "60",
+    lang: (BOARD_LANGS as readonly string[]).includes(settings.language) ? settings.language : "english",
+  };
+  const liveXp = started && live.second >= 3 ? testXp({ duration: live.second, wpm: live.wpm, acc: live.acc }) : 0;
+
+  const languageButton = (
+    <button
+      type="button"
+      tabIndex={-1}
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={() => {
+        const ids = ["english", "english_1k", "uzbek", "russian"] as const;
+        const i = ids.indexOf(settings.language);
+        update({ language: ids[(i + 1) % ids.length] });
+      }}
+      title={t("test.language")}
+      className="text-btn flex items-center gap-2 rounded-full px-3 py-1 text-sm hover:bg-[var(--hover)]"
+    >
+      <GlobeIcon size={15} />
+      {languageInfo(settings.language).label.toLowerCase()}
+    </button>
+  );
+
+  const surface =
+    engine && spec ? (
+      emptyCustom ? (
+        <div className="grid h-[4.5em] place-items-center text-sub" style={{ fontSize: "var(--font-size)" }}>
+          <span className="font-sans text-base">{t("test.customEmpty")}</span>
+        </div>
+      ) : (
+        <TypingSurface
+          key={spec.id}
+          engine={engine}
+          settings={settings}
+          onChange={onChange}
+          onRestart={() => void newTest()}
+          onZenFinish={() => finish(null)}
+          effects={settings.effects}
+          comboLabel={t("test.combo")}
+        />
+      )
+    ) : (
+      <div className="words-wrap">
+        <div className="words-clip" />
+      </div>
+    );
+
   return (
     <div className="relative flex flex-1 flex-col">
       {settings.timerStyle === "bar" && showStats ? (
         <div className="fixed top-0 left-0 z-40 h-1.5 bg-main transition-[width] duration-1000 ease-linear" style={{ width: `${Math.min(100, (spec?.mode === "time" ? (live.second + 1) / Math.max(1, spec.timeLimit) : progressFrac) * 100)}%` }} />
       ) : null}
 
-      <div className={`chrome pt-2 ${phase === "result" ? "invisible" : ""}`}>
+      {dash && phase === "test" ? (
+        <div className="chrome pt-1">
+          <LevelStrip progress={user ? progress : null} signedIn={!!user} streak={streak} streakSafe={streakSafe} />
+        </div>
+      ) : null}
+
+      <div className={`chrome ${dash ? "pt-4" : "pt-2"} ${phase === "result" ? (dash ? "hidden" : "invisible") : ""}`}>
         <ConfigBar settings={settings} update={update} onCustom={() => setCustomOpen(true)} />
       </div>
 
-      <div className="flex flex-1 flex-col justify-center py-10">
+      <div className={`flex flex-1 flex-col ${dash && phase === "test" ? "pt-7 pb-6" : "justify-center py-10"}`}>
         {phase === "result" && result && spec ? (
           <ResultView
             result={result}
@@ -416,25 +535,30 @@ export function TypingTest({ initial }: { initial: InitialTest | null }) {
             onRepeat={() => void newTest({ repeat: true })}
             onPractice={() => void newTest({ practice: practiceWords(result.missedWords) })}
           />
+        ) : dash ? (
+          <div className="dash relative mx-auto w-full max-w-[72rem]">
+            <div className="chrome mb-3 flex justify-center">{languageButton}</div>
+            <div className="px-1 sm:px-4">{surface}</div>
+            <div className="mt-9">
+              <LiveStats wpm={live.wpm} acc={live.acc} combo={live.combo} correct={live.correct} xp={liveXp} started={showStats} last={last} effects={settings.effects} />
+              {settings.timerStyle !== "off" && spec ? (
+                <ProgressRow
+                  frac={spec.mode === "time" ? (showStats ? (live.second + 1) / Math.max(1, spec.timeLimit) : 0) : progressFrac}
+                  done={spec.mode === "time" ? live.second : live.typed}
+                  total={spec.mode === "time" ? spec.timeLimit : spec.mode === "zen" ? 0 : spec.words.length}
+                  time={spec.mode === "time"}
+                />
+              ) : null}
+            </div>
+            <div className="chrome">
+              {dailyReady ? <GoalPill today={todayTests} href={user ? `/u/${user.username}` : "/login"} /> : <div className="mt-6 h-11" aria-hidden="true" />}
+              <Widgets progress={user ? progress : null} username={user?.username ?? null} challenge={challenge ?? { target: 40, best: 0 }} board={board} />
+              <AgainButton onClick={() => void newTest()} />
+            </div>
+          </div>
         ) : (
           <div className="relative mx-auto w-full">
-            <div className="chrome mb-4 flex justify-center">
-              <button
-                type="button"
-                tabIndex={-1}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => {
-                  const ids = ["english", "english_1k", "uzbek", "russian"] as const;
-                  const i = ids.indexOf(settings.language);
-                  update({ language: ids[(i + 1) % ids.length] });
-                }}
-                title={t("test.language")}
-                className="text-btn flex items-center gap-2 text-sm"
-              >
-                <GlobeIcon size={15} />
-                {languageInfo(settings.language).label.toLowerCase()}
-              </button>
-            </div>
+            <div className="chrome mb-4 flex justify-center">{languageButton}</div>
             <div className="mb-2 flex h-[calc(var(--font-size)*1.2)] items-end gap-[1.2em] font-typing text-main" style={{ fontSize: "calc(var(--font-size) * 1.05)" }} aria-live="off">
               <span className={`tabular transition-opacity duration-150 ${showStats && settings.timerStyle === "text" ? "opacity-100" : "opacity-0"}`}>{progressText}</span>
               {settings.liveWpm ? (
@@ -444,64 +568,37 @@ export function TypingTest({ initial }: { initial: InitialTest | null }) {
               ) : null}
               {settings.liveAcc ? <span className={`tabular transition-opacity duration-150 ${showStats ? "opacity-60" : "opacity-0"}`}>{Math.floor(live.acc)}%</span> : null}
             </div>
-            {engine && spec ? (
-              emptyCustom ? (
-                <div className="grid h-[4.5em] place-items-center text-sub" style={{ fontSize: "var(--font-size)" }}>
-                  <span className="font-sans text-base">{t("test.customEmpty")}</span>
-                </div>
-              ) : (
-                <TypingSurface
-                  key={spec.id}
-                  engine={engine}
-                  settings={settings}
-                  onChange={onChange}
-                  onRestart={() => void newTest()}
-                  onZenFinish={() => finish(null)}
-                  effects={settings.effects}
-                  comboLabel={t("test.combo")}
-                />
-              )
-            ) : (
-              <div className="words-wrap">
-                <div className="words-clip" />
-              </div>
-            )}
+            {surface}
             <div className="chrome mt-8 flex justify-center">
               <button type="button" onClick={() => void newTest()} title={t("test.restart")} aria-label={t("test.restart")} className="text-btn grid h-11 w-14 place-items-center rounded-lg focus-visible:bg-sub-alt focus-visible:text-text">
                 <RestartIcon size={19} />
               </button>
             </div>
-            <DailyLine
-              streak={user ? (progress?.streak ?? 0) : guestDaily ? effectiveStreak({ current: guestDaily.streak, best: guestDaily.best, lastDay: guestDaily.last }, dayKey()) : 0}
-              safe={user ? !!progress?.streakToday : guestDaily?.last === dayKey()}
-              today={user ? (progress?.today === dayKey() ? progress.todayTests : 0) : guestDaily?.day === dayKey() ? guestDaily.count : 0}
-              ready={user ? !!progress : guestDaily !== null}
-            />
+            <DailyLine streak={streak} safe={streakSafe} today={todayTests} ready={dailyReady} />
           </div>
         )}
       </div>
 
       {settings.showKeyTips ? (
-        <div className="chrome pb-2 text-center text-xs leading-7 text-sub">
+        <div className="chrome flex flex-wrap items-center justify-center gap-x-4 gap-y-2 pb-3 text-xs text-sub">
           {settings.quickRestart !== "off" ? (
-            <div>
-              <kbd>{settings.quickRestart}</kbd> — {t("test.hintRestart")}
-              {spec?.mode === "zen" ? (
-                <>
-                  <span className="mx-3" />
-                  <kbd>shift</kbd> + <kbd>enter</kbd> — {t("test.hintZen")}
-                </>
-              ) : null}
-            </div>
+            <span className="hint">
+              <kbd>{settings.quickRestart}</kbd> {t("test.hintRestart")}
+            </span>
           ) : null}
-          <div>
-            {settings.quickRestart !== "esc" ? (
-              <>
-                <kbd>esc</kbd> /{" "}
-              </>
-            ) : null}
-            <kbd>ctrl</kbd> + <kbd>shift</kbd> + <kbd>p</kbd> — {t("test.hintPalette")}
-          </div>
+          {spec?.mode === "zen" ? (
+            <>
+              <span className="h-4 w-px bg-line" aria-hidden="true" />
+              <span className="hint">
+                <kbd>shift</kbd>+<kbd>enter</kbd> {t("test.hintZen")}
+              </span>
+            </>
+          ) : null}
+          <span className="h-4 w-px bg-line" aria-hidden="true" />
+          <span className="hint">
+            {settings.quickRestart !== "esc" ? <kbd>esc</kbd> : null}
+            <kbd>ctrl</kbd>+<kbd>k</kbd> {t("test.hintPalette")}
+          </span>
         </div>
       ) : null}
 
